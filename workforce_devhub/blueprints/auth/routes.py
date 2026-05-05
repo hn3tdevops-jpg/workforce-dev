@@ -11,6 +11,16 @@ from .forms import LoginForm
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
+def _safe_next(next_url: str | None) -> str:
+    """Return next_url only when it is a relative URL (no scheme or host)."""
+    if not next_url:
+        return url_for('main.index')
+    parsed = urlsplit(next_url)
+    if parsed.scheme or parsed.netloc:
+        return url_for('main.index')
+    return next_url
+
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -22,11 +32,7 @@ def login():
             user.last_login = datetime.utcnow()
             db.session.commit()
             login_user(user, remember=form.remember_me.data)
-            next_page = request.args.get('next')
-            # Validate next_page to prevent open redirect to external URLs
-            if next_page and (urlsplit(next_page).netloc or urlsplit(next_page).scheme):
-                next_page = None
-            return redirect(next_page or url_for('main.index'))
+            return redirect(_safe_next(request.args.get('next')))
         flash('Invalid username or password.', 'danger')
     return render_template('auth/login.html', form=form)
 
