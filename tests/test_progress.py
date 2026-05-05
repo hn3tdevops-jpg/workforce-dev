@@ -1,4 +1,3 @@
-from devhub.models import ProgressEntry
 
 
 def test_progress_index(client):

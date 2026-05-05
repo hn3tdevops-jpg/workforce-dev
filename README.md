@@ -69,3 +69,24 @@ wsgi.py        WSGI entry point
 ## Security Notes
 
 Script execution and package installation are **disabled by default**. See [SECURITY_MODEL.md](docs/SECURITY_MODEL.md) for details.
+
+## Required Environment Variables
+
+| Variable | Required in Production | Default (dev) | Description |
+|---|---|---|---|
+| `DEVHUB_SECRET_KEY` | **Yes** | `dev-secret-change-me` | Flask session signing key. **Must** be a long random string in production. |
+| `DEVHUB_DATABASE_URL` | Recommended | `sqlite:///devhub.db` | SQLAlchemy database URL. Use an absolute path for PythonAnywhere. |
+| `DEVHUB_ADMIN_EMAIL` | Yes | `admin@example.com` | Email for the initial admin account. |
+| `DEVHUB_ADMIN_PASSWORD` | Yes | *(empty)* | Password for the initial admin account. Set before running `flask create-admin`. |
+| `DEVHUB_UPLOAD_DIR` | No | `uploads` | Directory for file uploads. |
+| `DEVHUB_QUARANTINE_DIR` | No | `quarantine` | Directory for quarantined packages. |
+| `DEVHUB_ENABLE_SCRIPT_EXECUTION` | No | `false` | Set to `true` to enable script execution (advanced). |
+| `DEVHUB_ENABLE_PACKAGE_INSTALL` | No | `false` | Set to `true` to enable package installation (advanced). |
+| `DEVHUB_WORKSPACE_ROOTS` | No | *(empty)* | Comma-separated list of workspace root directories to scan. |
+| `DEVHUB_SCANNER_EXCLUDED_DIRS` | No | see config.py | Comma-separated dir names to exclude from workspace scan. |
+| `DEVHUB_SCANNER_EXCLUDED_EXTENSIONS` | No | `.db,.sqlite,.log,.env` | Comma-separated file extensions to exclude from workspace scan. |
+| `DEVHUB_ENV` | No | *(not set)* | Set to `production` to activate production safety checks (e.g. rejects placeholder `DEVHUB_SECRET_KEY`). |
+
+### Production Config
+
+Use `ProductionConfig` (from `devhub.config`) or set `DEVHUB_ENV=production` to activate startup validation. The app will refuse to start if `DEVHUB_SECRET_KEY` is missing or uses the placeholder value.

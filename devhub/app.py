@@ -1,12 +1,23 @@
+import os
+
 from flask import Flask
 
-from devhub.config import Config
+from devhub.config import _PLACEHOLDER_KEY, Config
 from devhub.extensions import csrf, db, login_manager, migrate
 
 
 def create_app(config_class=Config):
     app = Flask(__name__, template_folder="templates", static_folder="static")
     app.config.from_object(config_class)
+
+    # Refuse to start in production with the placeholder secret key.
+    if not app.config.get("TESTING") and os.environ.get("DEVHUB_ENV", "").lower() == "production":
+        secret = app.config.get("SECRET_KEY", "")
+        if not secret or secret == _PLACEHOLDER_KEY:
+            raise RuntimeError(
+                "DEVHUB_SECRET_KEY must be set to a strong, unique value when "
+                "DEVHUB_ENV=production. The placeholder key is not acceptable."
+            )
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -16,15 +27,15 @@ def create_app(config_class=Config):
     login_manager.login_view = "auth.login"
     login_manager.login_message_category = "warning"
 
-    from devhub.routes.main import bp as main_bp
+    from devhub.auth import bp as auth_bp
     from devhub.routes.admin import bp as admin_bp
     from devhub.routes.api import bp as api_bp
     from devhub.routes.docs import bp as docs_bp
-    from devhub.routes.projects import bp as projects_bp
-    from devhub.routes.progress import bp as progress_bp
-    from devhub.routes.scripts import bp as scripts_bp
+    from devhub.routes.main import bp as main_bp
     from devhub.routes.packages import bp as packages_bp
-    from devhub.auth import bp as auth_bp
+    from devhub.routes.progress import bp as progress_bp
+    from devhub.routes.projects import bp as projects_bp
+    from devhub.routes.scripts import bp as scripts_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp, url_prefix="/admin")

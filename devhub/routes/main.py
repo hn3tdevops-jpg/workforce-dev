@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request
 
-from devhub.models import Document, Package, ProgressEntry, Project, Script, TrackedFile
+from devhub.models import Document, Package, ProgressEntry, Project, TrackedFile
 from devhub.search import search_all
 
 bp = Blueprint("main", __name__)
