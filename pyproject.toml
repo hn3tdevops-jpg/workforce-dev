@@ -1,0 +1,15 @@
+[project]
+name = "workforce-dev"
+version = "0.1.0"
+dependencies = [
+    "Flask>=3.0,<4.0",
+    "Flask-SQLAlchemy>=3.0",
+    "Flask-Migrate>=4.0",
+    "Flask-Login>=0.6",
+    "Flask-Bcrypt>=1.0",
+    "python-dotenv>=1.0",
+    "Werkzeug>=3.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

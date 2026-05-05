@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Packages - DevHub{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Packages</h2>
+  <a href="{{ url_for('packages.upload') }}" class="btn btn-primary">Upload</a>
+</div>
+{% if pkg is defined and pkg %}
+<div class="card mb-3">
+  <div class="card-header">Package: {{ pkg.original_filename }}</div>
+  <div class="card-body">
+    <p><strong>Status:</strong> <span class="badge bg-{% if pkg.status == 'validated' %}success{% elif pkg.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ pkg.status }}</span></p>
+    <p><strong>Uploaded:</strong> {{ pkg.uploaded_at }}</p>
+    {% if pkg.notes %}<p><strong>Notes:</strong> {{ pkg.notes }}</p>{% endif %}
+    {% if manifest %}
+    <h5>Manifest</h5>
+    <ul>{% for k, v in manifest.items() %}<li><strong>{{ k }}:</strong> {{ v }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if current_user.is_admin %}
+    <form method="POST" action="{{ url_for('packages.validate', id=pkg.id) }}">
+      <button type="submit" class="btn btn-sm btn-info">Re-validate</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% if packages %}
+<ul class="list-group">
+  {% for p in packages %}
+  <li class="list-group-item d-flex justify-content-between">
+    <a href="{{ url_for('packages.view', id=p.id) }}">{{ p.original_filename }}</a>
+    <span class="badge bg-{% if p.status == 'validated' %}success{% elif p.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ p.status }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% elif not (pkg is defined and pkg) %}
+<p class="text-muted">No packages uploaded yet.</p>
+{% endif %}
+{% endblock %}

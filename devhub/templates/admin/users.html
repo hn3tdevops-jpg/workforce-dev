@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Users - Admin - DevHub{% endblock %}
+{% block content %}
+<h2>User Management</h2>
+<table class="table table-striped mt-3">
+  <thead><tr><th>Username</th><th>Email</th><th>Admin</th><th>Active</th><th>Actions</th></tr></thead>
+  <tbody>
+  {% for u in users %}
+  <tr>
+    <td>{{ u.username }}</td>
+    <td>{{ u.email }}</td>
+    <td>{% if u.is_admin %}<span class="badge bg-success">Yes</span>{% else %}No{% endif %}</td>
+    <td>{% if u.is_active %}<span class="badge bg-primary">Yes</span>{% else %}<span class="badge bg-danger">No</span>{% endif %}</td>
+    <td>
+      {% if u.id != current_user.id %}
+      <form method="POST" action="{{ url_for('admin.toggle_admin', id=u.id) }}" class="d-inline">
+        <button type="submit" class="btn btn-sm btn-outline-secondary">Toggle Admin</button>
+      </form>
+      <form method="POST" action="{{ url_for('admin.deactivate', id=u.id) }}" class="d-inline">
+        <button type="submit" class="btn btn-sm btn-danger">Deactivate</button>
+      </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

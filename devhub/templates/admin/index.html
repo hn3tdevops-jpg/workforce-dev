@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Admin - DevHub{% endblock %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+<div class="row mt-3">
+  {% for label, count in stats.items() %}
+  <div class="col-md-2 mb-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title">{{ count }}</h5>
+        <p class="card-text text-capitalize">{{ label }}</p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<a href="{{ url_for('admin.users') }}" class="btn btn-primary me-2">Manage Users</a>
+<a href="{{ url_for('admin.audit') }}" class="btn btn-secondary">Audit Log</a>
+{% endblock %}
