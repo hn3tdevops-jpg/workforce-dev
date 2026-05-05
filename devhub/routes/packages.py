@@ -48,14 +48,14 @@ def upload():
     if request.method == "POST":
         if "file" not in request.files:
             flash("No file part.", "danger")
-            return redirect(request.url)
+            return redirect(url_for("packages.upload"))
         file = request.files["file"]
         if file.filename == "":
             flash("No selected file.", "danger")
-            return redirect(request.url)
+            return redirect(url_for("packages.upload"))
         if not allowed_file(file.filename):
             flash("Only zip files are allowed.", "danger")
-            return redirect(request.url)
+            return redirect(url_for("packages.upload"))
 
         filename = secure_filename(file.filename)
         quarantine_dir = current_app.config.get("QUARANTINE_DIR", "quarantine")

@@ -1,5 +1,4 @@
 import sys
-import os
 from datetime import datetime
 from flask import Blueprint, jsonify, request
 

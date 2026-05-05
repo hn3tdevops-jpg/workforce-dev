@@ -29,6 +29,9 @@ def login():
             return redirect(url_for("auth.login"))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get("next")
+        # Prevent open redirect: only allow relative paths starting with /
+        if next_page and (not next_page.startswith("/") or next_page.startswith("//")):
+            next_page = None
         return redirect(next_page or url_for("main.index"))
     return render_template("login.html", form=form)
 
