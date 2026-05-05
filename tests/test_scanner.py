@@ -84,8 +84,26 @@ def test_scan_custom_exclude_dirs(tmp_path):
     assert 'file.txt' not in filenames
     assert 'other.txt' in filenames
 
+def test_scan_custom_exclude_extensions(tmp_path):
+    (tmp_path / 'report.log').write_text('log')
+    (tmp_path / 'app.py').write_text('code')
+    scanner = FileScanner()
+    records = scanner.scan_directory(str(tmp_path), exclude_extensions={'.log'})
+    filenames = [r['filename'] for r in records]
+    assert 'report.log' not in filenames
+    assert 'app.py' in filenames
+
+def test_scan_custom_exclude_filenames(tmp_path):
+    (tmp_path / 'secrets.conf').write_text('secret')
+    (tmp_path / 'config.yml').write_text('cfg')
+    scanner = FileScanner()
+    records = scanner.scan_directory(str(tmp_path), exclude_filenames={'secrets.conf'})
+    filenames = [r['filename'] for r in records]
+    assert 'secrets.conf' not in filenames
+    assert 'config.yml' in filenames
+
+
 def test_update_database(app, db, tmp_path):
-    with app.app_context():
         f = tmp_path / 'scan.txt'
         f.write_text('data')
         scanner = FileScanner()
