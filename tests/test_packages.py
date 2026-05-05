@@ -151,7 +151,7 @@ def test_upload_duplicate_filename_no_overwrite(client, app, admin_user):
         from devhub.models import Package
 
         pkgs = Package.query.filter_by(filename="mypackage.zip").all()
-        assert len(pkgs) >= 2, "Both uploads must be recorded"
+        assert len(pkgs) == 2, "Both uploads must be recorded"
         paths = [p.quarantine_path for p in pkgs]
         assert len(set(paths)) == len(paths), (
             "Duplicate quarantine paths — files would overwrite each other!"

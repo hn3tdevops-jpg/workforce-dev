@@ -20,17 +20,29 @@ class Config:
     # Directories and file extensions excluded from workspace scanning.
     # Override via subclass or DEVHUB_SCANNER_EXCLUDED_DIRS / DEVHUB_SCANNER_EXCLUDED_EXTENSIONS.
     SCANNER_EXCLUDED_DIRS = set(
-        [d.strip() for d in os.environ.get(
-            "DEVHUB_SCANNER_EXCLUDED_DIRS",
-            ".git,__pycache__,node_modules,venv,.venv,uploads,quarantine,dist,build,"
-            ".pytest_cache,.ruff_cache,instance,*.egg-info",
-        ).split(",") if d.strip()]
+        filter(
+            None,
+            (
+                d.strip()
+                for d in os.environ.get(
+                    "DEVHUB_SCANNER_EXCLUDED_DIRS",
+                    ".git,__pycache__,node_modules,venv,.venv,uploads,quarantine,dist,build,"
+                    ".pytest_cache,.ruff_cache,instance,*.egg-info",
+                ).split(",")
+            ),
+        )
     )
     SCANNER_EXCLUDED_EXTENSIONS = set(
-        [e.strip().lstrip(".") for e in os.environ.get(
-            "DEVHUB_SCANNER_EXCLUDED_EXTENSIONS",
-            ".db,.sqlite,.log,.env",
-        ).split(",") if e.strip()]
+        filter(
+            None,
+            (
+                e.strip().lstrip(".")
+                for e in os.environ.get(
+                    "DEVHUB_SCANNER_EXCLUDED_EXTENSIONS",
+                    ".db,.sqlite,.log,.env",
+                ).split(",")
+            ),
+        )
     )
 
 
