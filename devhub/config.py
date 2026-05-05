@@ -1,7 +1,9 @@
 import os
 
+_DEV_SECRET_KEY = 'dev-secret-key-change-in-production'
+
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+    SECRET_KEY = os.environ.get('SECRET_KEY', _DEV_SECRET_KEY)
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///devhub.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = 'uploads/quarantine'
@@ -15,6 +17,15 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
+
+    @classmethod
+    def init_app(cls, app):
+        sk = os.environ.get('SECRET_KEY') or app.config.get('SECRET_KEY', '')
+        if not sk or sk == _DEV_SECRET_KEY:
+            raise RuntimeError(
+                'SECRET_KEY must be set to a strong random value in production. '
+                'Set the SECRET_KEY environment variable.'
+            )
 
 class TestingConfig(Config):
     TESTING = True

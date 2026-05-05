@@ -63,5 +63,21 @@ def test_empty_zip(tmp_path):
     zpath = make_zip(tmp_path, 'empty.zip', {})
     v = PackageValidator()
     result = v.validate_zip(zpath)
-    assert result['valid'] is True  # no manifest required, no errors
-    assert result['manifest'] == {}
+    assert result['valid'] is False
+    assert any('empty' in e.lower() for e in result['errors'])
+
+def test_zip_missing_manifest(tmp_path):
+    zpath = make_zip(tmp_path, 'nomanifest.zip', {'data.txt': b'hello'})
+    v = PackageValidator()
+    result = v.validate_zip(zpath)
+    assert result['valid'] is False
+    assert any('manifest.json' in e for e in result['errors'])
+
+def test_zip_absolute_path(tmp_path):
+    zpath = tmp_path / 'abs.zip'
+    with zipfile.ZipFile(str(zpath), 'w') as zf:
+        zf.writestr('/etc/evil.txt', 'evil')
+    v = PackageValidator()
+    result = v.validate_zip(str(zpath))
+    assert result['valid'] is False
+    assert any('traversal' in e or 'Path' in e for e in result['errors'])
