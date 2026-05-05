@@ -12,10 +12,9 @@ bp = Blueprint("auth", __name__)
 
 
 def _is_safe_url(target: str) -> bool:
-    """Return True only for relative URLs on the same host."""
-    ref = urlparse(request.host_url)
-    tgt = urlparse(target)
-    return tgt.scheme in ("", "http", "https") and ref.netloc == tgt.netloc
+    """Return True only for relative paths (no scheme, no netloc)."""
+    parsed = urlparse(target)
+    return not parsed.scheme and not parsed.netloc and target.startswith("/")
 
 
 class LoginForm(FlaskForm):
