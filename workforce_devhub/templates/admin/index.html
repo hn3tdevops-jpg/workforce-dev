@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Admin – DevHub{% endblock %}
+{% block content %}
+<h1 class="mb-4"><i class="bi bi-gear"></i> Administration</h1>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Feature Flags</div>
+      <table class="table mb-0">
+        <tbody>
+          <tr>
+            <td>Script Execution</td>
+            <td><span class="badge bg-{{ 'success' if config.ENABLE_SCRIPT_EXECUTION else 'secondary' }}">
+              {{ 'Enabled' if config.ENABLE_SCRIPT_EXECUTION else 'Disabled' }}
+            </span></td>
+          </tr>
+          <tr>
+            <td>Package Install</td>
+            <td><span class="badge bg-{{ 'success' if config.ENABLE_PACKAGE_INSTALL else 'secondary' }}">
+              {{ 'Enabled' if config.ENABLE_PACKAGE_INSTALL else 'Disabled' }}
+            </span></td>
+          </tr>
+          <tr>
+            <td>Workspace Roots</td>
+            <td><code class="small">{{ config.WORKSPACE_ROOTS | join(', ') or 'None' }}</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Users</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Username</th><th>Email</th><th>Admin</th><th>Last Login</th></tr></thead>
+          <tbody>
+            {% for user in users %}
+            <tr>
+              <td>{{ user.username }}</td>
+              <td>{{ user.email }}</td>
+              <td>{% if user.is_admin %}<i class="bi bi-check-circle text-success"></i>{% endif %}</td>
+              <td class="small text-muted">{{ user.last_login.strftime('%Y-%m-%d') if user.last_login else 'Never' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Projects</div>
+      <table class="table table-sm mb-0">
+        <thead><tr><th>Name</th><th>Slug</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for p in projects %}
+          <tr>
+            <td><a href="{{ url_for('projects.detail', slug=p.slug) }}">{{ p.name }}</a></td>
+            <td><code>{{ p.slug }}</code></td>
+            <td><span class="badge bg-{{ 'success' if p.status == 'active' else 'secondary' }}">{{ p.status }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Recent Audit Log</div>
+      <ul class="list-group list-group-flush" style="max-height: 300px; overflow-y: auto;">
+        {% for log in audit_logs %}
+        <li class="list-group-item small d-flex justify-content-between">
+          <span>
+            <strong>{{ log.action }}</strong>
+            {% if log.target_type %} on {{ log.target_type }}{% endif %}
+            {% if log.detail %}<br><span class="text-muted">{{ log.detail[:80] }}</span>{% endif %}
+          </span>
+          <span class="text-muted text-nowrap ms-2">
+            {{ log.timestamp.strftime('%m-%d %H:%M') }}
+            {% if log.user %}<br>{{ log.user.username }}{% endif %}
+          </span>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">No audit entries.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

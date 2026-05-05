@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}{% if doc %}Edit Doc{% else %}New Doc{% endif %} – DevHub{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{{ url_for('docs.index') }}">Docs</a></li>
+  <li class="breadcrumb-item active">{% if doc %}Edit{% else %}New{% endif %}</li>
+</ol></nav>
+
+<h1>{% if doc %}Edit Document{% else %}New Document{% endif %}</h1>
+
+<div class="card mt-3">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="mb-3">
+        {{ form.title.label(class="form-label") }}
+        {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+        {% for e in form.title.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          {{ form.doc_type.label(class="form-label") }}
+          {{ form.doc_type(class="form-select") }}
+        </div>
+        <div class="col-md-4">
+          {{ form.status.label(class="form-label") }}
+          {{ form.status(class="form-select") }}
+        </div>
+        <div class="col-md-4">
+          {{ form.project_id.label(class="form-label") }}
+          {{ form.project_id(class="form-select") }}
+        </div>
+      </div>
+      <div class="mb-3">
+        {{ form.summary.label(class="form-label") }}
+        {{ form.summary(class="form-control", rows=3) }}
+      </div>
+      <div class="mb-3">
+        {{ form.content.label(class="form-label") }}
+        {{ form.content(class="form-control font-monospace", rows=12) }}
+      </div>
+      <div class="mb-3">
+        {{ form.external_url.label(class="form-label") }}
+        {{ form.external_url(class="form-control" + (" is-invalid" if form.external_url.errors else "")) }}
+        {% for e in form.external_url.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="mb-3">
+        {{ form.tags.label(class="form-label") }}
+        {{ form.tags(class="form-control") }}
+        <div class="form-text">Comma-separated tags, e.g. api, guide, security</div>
+      </div>
+      <div class="d-flex gap-2">
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('docs.index') }}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

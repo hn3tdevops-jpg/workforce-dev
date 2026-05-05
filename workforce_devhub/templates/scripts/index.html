@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Scripts – DevHub{% endblock %}
+{% block content %}
+<h1 class="mb-3"><i class="bi bi-terminal"></i> Script Library</h1>
+
+{% if not exec_enabled %}
+<div class="alert alert-info">
+  <i class="bi bi-info-circle"></i>
+  Script execution is <strong>disabled</strong>. Commands are shown for reference only.
+  Set <code>DEVHUB_ENABLE_SCRIPT_EXECUTION=true</code> to enable.
+</div>
+{% endif %}
+
+<div class="table-responsive">
+  <table class="table table-hover">
+    <thead class="table-light">
+      <tr><th>Name</th><th>Project</th><th>Risk</th><th>Tags</th><th>Last Run</th></tr>
+    </thead>
+    <tbody>
+      {% for script in scripts %}
+      <tr>
+        <td><a href="{{ url_for('scripts.detail', script_id=script.id) }}">{{ script.name }}</a></td>
+        <td>{{ script.project.name if script.project else '—' }}</td>
+        <td>
+          <span class="badge bg-{{ 'danger' if script.risk_level == 'dangerous' else 'warning' if script.risk_level == 'moderate' else 'success' }}">
+            {{ script.risk_level }}
+          </span>
+        </td>
+        <td><small>{{ script.tags or '—' }}</small></td>
+        <td class="small text-muted">
+          {{ script.last_run_at.strftime('%Y-%m-%d') if script.last_run_at else 'Never' }}
+          {% if script.last_run_status %}
+          <span class="badge bg-{{ 'success' if script.last_run_status == 'success' else 'danger' }}">{{ script.last_run_status }}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="text-muted text-center">No scripts.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

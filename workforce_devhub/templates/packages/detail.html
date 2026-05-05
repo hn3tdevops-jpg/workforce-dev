@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}{{ pkg.name }} – DevHub{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{{ url_for('packages.index') }}">Packages</a></li>
+  <li class="breadcrumb-item active">{{ pkg.name }}</li>
+</ol></nav>
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h1>{{ pkg.name }} <small class="text-muted fs-5">v{{ pkg.version }}</small></h1>
+    <p class="text-muted">{{ pkg.description or 'No description.' }}</p>
+  </div>
+  <div class="text-end">
+    <span class="badge bg-{{ 'success' if pkg.status == 'approved' else 'danger' if pkg.status == 'rejected' else 'warning' if pkg.status == 'validated' else 'secondary' }} fs-6 d-block mb-2">
+      {{ pkg.status }}
+    </span>
+    {% if current_user.is_admin and pkg.status not in ['approved', 'rejected'] %}
+    <form method="post" action="{{ url_for('packages.approve', pkg_id=pkg.id) }}" class="d-inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-success btn-sm me-1">Approve</button>
+    </form>
+    <form method="post" action="{{ url_for('packages.reject', pkg_id=pkg.id) }}" class="d-inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<dl class="row">
+  <dt class="col-sm-3">Package Key</dt><dd class="col-sm-9"><code>{{ pkg.package_key }}</code></dd>
+  <dt class="col-sm-3">Target Project</dt><dd class="col-sm-9">{{ pkg.target_project or '—' }}</dd>
+  <dt class="col-sm-3">Risk Level</dt>
+  <dd class="col-sm-9"><span class="badge bg-{{ 'danger' if pkg.risk_level == 'high' else 'warning' if pkg.risk_level == 'medium' else 'success' }}">{{ pkg.risk_level }}</span></dd>
+  <dt class="col-sm-3">Filename</dt><dd class="col-sm-9"><code>{{ pkg.filename }}</code></dd>
+  <dt class="col-sm-3">Uploaded</dt>
+  <dd class="col-sm-9">{{ pkg.uploaded_at.strftime('%Y-%m-%d %H:%M') }}{% if pkg.uploader %} by {{ pkg.uploader.username }}{% endif %}</dd>
+  {% if not install_enabled %}
+  <dt class="col-sm-3">Install</dt>
+  <dd class="col-sm-9"><span class="text-muted">Installation disabled (feature flag off)</span></dd>
+  {% endif %}
+</dl>
+
+{% if manifest %}
+<div class="card mb-3">
+  <div class="card-header">Manifest (devhub-package.json)</div>
+  <div class="card-body">
+    <pre class="mb-0"><code>{{ manifest | tojson(indent=2) }}</code></pre>
+  </div>
+</div>
+{% endif %}
+
+<h4 class="mt-4">Audit Log</h4>
+<ul class="list-group">
+  {% for log in audit_logs %}
+  <li class="list-group-item d-flex justify-content-between small">
+    <span><strong>{{ log.action }}</strong>{% if log.detail %} – {{ log.detail }}{% endif %}</span>
+    <span class="text-muted">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}{% if log.user %} by {{ log.user.username }}{% endif %}</span>
+  </li>
+  {% else %}
+  <li class="list-group-item text-muted">No audit entries.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

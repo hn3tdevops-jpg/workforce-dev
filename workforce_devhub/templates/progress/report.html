@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Progress Report – DevHub{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1><i class="bi bi-file-earmark-bar-graph"></i> Progress Report</h1>
+</div>
+
+<form class="row g-2 mb-4" method="get">
+  <div class="col-md-2">
+    <select name="days" class="form-select">
+      {% for d in [3, 7, 14, 30, 90] %}
+      <option value="{{ d }}" {% if days == d %}selected{% endif %}>Last {{ d }} days</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <select name="project_id" class="form-select">
+      <option value="">All Projects</option>
+      {% for p in projects %}
+      <option value="{{ p.id }}" {% if selected_project == p.id %}selected{% endif %}>{{ p.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-outline-primary">Generate</button>
+  </div>
+</form>
+
+<div class="card">
+  <div class="card-header">
+    Report: {{ entries|length }} entries since {{ since.strftime('%Y-%m-%d') }}
+  </div>
+  <div class="card-body">
+    {% if entries %}
+    <pre class="mb-0" style="font-family: inherit; white-space: pre-wrap;">
+# Progress Report
+Generated: {{ now().strftime('%Y-%m-%d') if now is defined else '' }}
+Period: Last {{ days }} days
+
+{% for entry in entries %}
+## {{ entry.title }}
+**Status:** {{ entry.status }}
+**Project:** {{ entry.project.name if entry.project else 'N/A' }}
+**Date:** {{ entry.created_at.strftime('%Y-%m-%d') }}
+
+{{ entry.description or 'No description.' }}
+
+{% if entry.commands_run %}**Commands:** {{ entry.commands_run }}{% endif %}
+{% if entry.test_results %}**Tests:** {{ entry.test_results }}{% endif %}
+{% if entry.notes %}**Notes:** {{ entry.notes }}{% endif %}
+
+---
+{% endfor %}
+    </pre>
+    {% else %}
+    <p class="text-muted">No entries in the selected period.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

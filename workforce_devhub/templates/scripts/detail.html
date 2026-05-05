@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}{{ script.name }} – DevHub{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{{ url_for('scripts.index') }}">Scripts</a></li>
+  <li class="breadcrumb-item active">{{ script.name }}</li>
+</ol></nav>
+
+<h1>{{ script.name }}</h1>
+<p class="text-muted">{{ script.description or 'No description.' }}</p>
+
+<div class="mb-3">
+  <span class="badge bg-{{ 'danger' if script.risk_level == 'dangerous' else 'warning' if script.risk_level == 'moderate' else 'success' }} fs-6">{{ script.risk_level }}</span>
+  {% if script.project %}<span class="badge bg-light text-dark border">{{ script.project.name }}</span>{% endif %}
+  {% if script.tags %}
+    {% for tag in script.tags.split(',') %}
+    <span class="badge bg-secondary">{{ tag.strip() }}</span>
+    {% endfor %}
+  {% endif %}
+</div>
+
+{% if not exec_enabled %}
+<div class="alert alert-info"><i class="bi bi-info-circle"></i> Script execution is disabled.</div>
+{% endif %}
+
+<div class="row g-3 mb-3">
+  {% if script.run_command %}
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Run Command</div>
+      <div class="card-body"><code>{{ script.run_command }}</code></div>
+    </div>
+  </div>
+  {% endif %}
+  {% if script.dry_run_command %}
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Dry Run Command</div>
+      <div class="card-body"><code>{{ script.dry_run_command }}</code></div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% if script.file_path %}
+<p><strong>File:</strong> <code>{{ script.file_path }}</code></p>
+{% endif %}
+{% if script.owner %}
+<p><strong>Owner:</strong> {{ script.owner }}</p>
+{% endif %}
+{% if script.notes %}
+<div class="card mb-3">
+  <div class="card-header">Notes</div>
+  <div class="card-body"><pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ script.notes }}</pre></div>
+</div>
+{% endif %}
+
+<h4 class="mt-4">Run History</h4>
+{% if run_logs %}
+<div class="table-responsive">
+  <table class="table table-sm">
+    <thead><tr><th>When</th><th>Status</th><th>Command</th></tr></thead>
+    <tbody>
+      {% for log in run_logs %}
+      <tr>
+        <td class="small">{{ log.ran_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td><span class="badge bg-{{ 'success' if log.status == 'success' else 'danger' }}">{{ log.status }}</span></td>
+        <td><code class="small">{{ log.command or '—' }}</code></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="text-muted">No run history.</p>
+{% endif %}
+{% endblock %}

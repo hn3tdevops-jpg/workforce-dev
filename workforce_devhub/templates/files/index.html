@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Tracked Files – DevHub{% endblock %}
+{% block content %}
+<h1 class="mb-3"><i class="bi bi-hdd"></i> Tracked Files</h1>
+
+<form class="row g-2 mb-4" method="get">
+  <div class="col-md-3">
+    <select name="project_id" class="form-select">
+      <option value="">All Projects</option>
+      {% for p in projects %}
+      <option value="{{ p.id }}" {% if selected_project == p.id %}selected{% endif %}>{{ p.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-outline-primary">Filter</button>
+  </div>
+</form>
+
+<p class="text-muted small">Run <code>flask scan</code> (with DEVHUB_WORKSPACE_ROOTS set) to update tracked files.</p>
+
+<div class="table-responsive">
+  <table class="table table-sm table-hover">
+    <thead class="table-light">
+      <tr><th>File Path</th><th>Project</th><th>Size</th><th>Last Scanned</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      {% for f in files %}
+      <tr>
+        <td><code class="small">{{ f.file_path }}</code></td>
+        <td>{{ f.project.name if f.project else '—' }}</td>
+        <td class="small text-muted">{{ (f.file_size // 1024)|string + ' KB' if f.file_size else '—' }}</td>
+        <td class="small text-muted">{{ f.last_scanned.strftime('%Y-%m-%d %H:%M') if f.last_scanned else '—' }}</td>
+        <td class="small">{{ f.notes or '' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="text-muted text-center">No tracked files.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

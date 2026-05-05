@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}{{ entry.title }} – DevHub{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{{ url_for('progress.index') }}">Progress</a></li>
+  <li class="breadcrumb-item active">{{ entry.title }}</li>
+</ol></nav>
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <h1>{{ entry.title }}</h1>
+  <a href="{{ url_for('progress.edit', entry_id=entry.id) }}" class="btn btn-outline-secondary">Edit</a>
+</div>
+
+<div class="mb-3">
+  <span class="badge bg-{{ 'success' if entry.status == 'completed' else 'danger' if entry.status == 'blocked' else 'primary' if entry.status == 'in_progress' else 'secondary' }} fs-6">
+    {{ entry.status }}
+  </span>
+  {% if entry.project %}
+  <span class="badge bg-light text-dark border ms-1">{{ entry.project.name }}</span>
+  {% endif %}
+</div>
+
+{% if entry.description %}
+<div class="card mb-3">
+  <div class="card-header">Description</div>
+  <div class="card-body"><pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ entry.description }}</pre></div>
+</div>
+{% endif %}
+
+{% if entry.commands_run %}
+<div class="card mb-3">
+  <div class="card-header"><i class="bi bi-terminal"></i> Commands Run</div>
+  <div class="card-body"><pre class="mb-0"><code>{{ entry.commands_run }}</code></pre></div>
+</div>
+{% endif %}
+
+{% if entry.test_results %}
+<div class="card mb-3">
+  <div class="card-header"><i class="bi bi-clipboard-check"></i> Test Results</div>
+  <div class="card-body"><pre class="mb-0"><code>{{ entry.test_results }}</code></pre></div>
+</div>
+{% endif %}
+
+{% if entry.evidence_links %}
+<div class="card mb-3">
+  <div class="card-header"><i class="bi bi-link-45deg"></i> Evidence Links</div>
+  <div class="card-body"><pre class="mb-0">{{ entry.evidence_links }}</pre></div>
+</div>
+{% endif %}
+
+{% if entry.file_paths %}
+<div class="card mb-3">
+  <div class="card-header"><i class="bi bi-folder"></i> File Paths</div>
+  <div class="card-body"><pre class="mb-0"><code>{{ entry.file_paths }}</code></pre></div>
+</div>
+{% endif %}
+
+{% if entry.notes %}
+<div class="card mb-3">
+  <div class="card-header">Notes</div>
+  <div class="card-body"><pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ entry.notes }}</pre></div>
+</div>
+{% endif %}
+
+<div class="text-muted small">
+  Created: {{ entry.created_at.strftime('%Y-%m-%d %H:%M') }} |
+  Updated: {{ entry.updated_at.strftime('%Y-%m-%d %H:%M') }}
+  {% if entry.user %} | by {{ entry.user.username }}{% endif %}
+</div>
+{% endblock %}

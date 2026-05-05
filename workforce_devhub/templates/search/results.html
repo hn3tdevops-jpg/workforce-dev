@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Search – DevHub{% endblock %}
+{% block content %}
+<h1 class="mb-3"><i class="bi bi-search"></i> Search Results</h1>
+
+<form class="row g-2 mb-4" method="get">
+  <div class="col-md-6">
+    <input type="text" name="q" class="form-control form-control-lg" placeholder="Search everything..." value="{{ q }}">
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary btn-lg">Search</button>
+  </div>
+</form>
+
+{% if q %}
+<p class="text-muted">Results for <strong>{{ q }}</strong></p>
+
+{% if docs %}
+<h4><i class="bi bi-file-text"></i> Documents ({{ docs|length }})</h4>
+<ul class="list-group mb-4">
+  {% for doc in docs %}
+  <li class="list-group-item"><a href="{{ url_for('docs.detail', doc_id=doc.id) }}">{{ doc.title }}</a>
+    <span class="badge bg-secondary float-end">{{ doc.status }}</span></li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if progress %}
+<h4><i class="bi bi-check2-circle"></i> Progress ({{ progress|length }})</h4>
+<ul class="list-group mb-4">
+  {% for e in progress %}
+  <li class="list-group-item"><a href="{{ url_for('progress.detail', entry_id=e.id) }}">{{ e.title }}</a>
+    <span class="badge bg-secondary float-end">{{ e.status }}</span></li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if scripts %}
+<h4><i class="bi bi-terminal"></i> Scripts ({{ scripts|length }})</h4>
+<ul class="list-group mb-4">
+  {% for s in scripts %}
+  <li class="list-group-item"><a href="{{ url_for('scripts.detail', script_id=s.id) }}">{{ s.name }}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if packages %}
+<h4><i class="bi bi-box"></i> Packages ({{ packages|length }})</h4>
+<ul class="list-group mb-4">
+  {% for p in packages %}
+  <li class="list-group-item"><a href="{{ url_for('packages.detail', pkg_id=p.id) }}">{{ p.name }}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if files %}
+<h4><i class="bi bi-hdd"></i> Files ({{ files|length }})</h4>
+<ul class="list-group mb-4">
+  {% for f in files %}
+  <li class="list-group-item"><code class="small">{{ f.file_path }}</code></li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if not docs and not progress and not scripts and not packages and not files %}
+<div class="alert alert-warning">No results found for <strong>{{ q }}</strong>.</div>
+{% endif %}
+
+{% else %}
+<p class="text-muted">Enter a search query above.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard – DevHub{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="bi bi-house-door"></i> Dashboard</h1>
+  <span class="text-muted">Workforce Developer Hub</span>
+</div>
+
+<div class="row g-3 mb-4">
+  {% for project in projects %}
+  <div class="col-md-4">
+    <div class="card h-100 border-{{ 'success' if project.status == 'active' else 'secondary' }}">
+      <div class="card-body">
+        <h5 class="card-title">
+          <a href="{{ url_for('projects.detail', slug=project.slug) }}" class="text-decoration-none">
+            {{ project.name }}
+          </a>
+        </h5>
+        <p class="card-text text-muted small">{{ project.description or 'No description.' }}</p>
+        <span class="badge bg-{{ 'success' if project.status == 'active' else 'secondary' }}">
+          {{ project.status }}
+        </span>
+      </div>
+      <div class="card-footer text-muted small">
+        <a href="{{ url_for('docs.index') }}?project_id={{ project.id }}">Docs</a> ·
+        <a href="{{ url_for('progress.index') }}?project_id={{ project.id }}">Progress</a> ·
+        <a href="{{ url_for('scripts.index') }}">Scripts</a>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col"><p class="text-muted">No projects yet. Run <code>flask seed</code>.</p></div>
+  {% endfor %}
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-check2-circle"></i> Recent Progress</div>
+      <ul class="list-group list-group-flush">
+        {% for entry in recent_progress %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{{ url_for('progress.detail', entry_id=entry.id) }}">{{ entry.title }}</a>
+          <span class="badge bg-{{ 'success' if entry.status == 'completed' else 'warning' if entry.status == 'blocked' else 'primary' }}">
+            {{ entry.status }}
+          </span>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">No progress entries yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-file-text"></i> Recent Docs</div>
+      <ul class="list-group list-group-flush">
+        {% for doc in recent_docs %}
+        <li class="list-group-item">
+          <a href="{{ url_for('docs.detail', doc_id=doc.id) }}" class="text-decoration-none">
+            {{ doc.title }}
+          </a>
+          <br><small class="text-muted">{{ doc.status }}</small>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">No docs yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-activity"></i> Recent Activity</div>
+      <ul class="list-group list-group-flush">
+        {% for log in recent_activity %}
+        <li class="list-group-item small">
+          <strong>{{ log.action }}</strong>
+          {% if log.user %}<br><span class="text-muted">by {{ log.user.username }}</span>{% endif %}
+          <br><span class="text-muted">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">No activity yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

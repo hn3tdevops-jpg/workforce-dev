@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Progress – DevHub{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1><i class="bi bi-check2-circle"></i> Progress</h1>
+  <div>
+    <a href="{{ url_for('progress.new') }}" class="btn btn-primary me-2">+ New Entry</a>
+    <a href="{{ url_for('progress.report') }}" class="btn btn-outline-secondary">Report</a>
+  </div>
+</div>
+
+<form class="row g-2 mb-4" method="get">
+  <div class="col-md-3">
+    <select name="project_id" class="form-select">
+      <option value="">All Projects</option>
+      {% for p in projects %}
+      <option value="{{ p.id }}" {% if selected_project == p.id %}selected{% endif %}>{{ p.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <select name="status" class="form-select">
+      <option value="">All Statuses</option>
+      {% for s in ['planned', 'in_progress', 'completed', 'blocked'] %}
+      <option value="{{ s }}" {% if selected_status == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-outline-primary">Filter</button>
+  </div>
+</form>
+
+<div class="list-group">
+  {% for entry in entries %}
+  <a href="{{ url_for('progress.detail', entry_id=entry.id) }}" class="list-group-item list-group-item-action">
+    <div class="d-flex justify-content-between">
+      <strong>{{ entry.title }}</strong>
+      <span class="badge bg-{{ 'success' if entry.status == 'completed' else 'danger' if entry.status == 'blocked' else 'primary' if entry.status == 'in_progress' else 'secondary' }}">
+        {{ entry.status }}
+      </span>
+    </div>
+    <small class="text-muted">
+      {{ entry.project.name if entry.project else 'No project' }} ·
+      {{ entry.created_at.strftime('%Y-%m-%d') }}
+    </small>
+  </a>
+  {% else %}
+  <div class="list-group-item text-muted">No entries found.</div>
+  {% endfor %}
+</div>
+{% endblock %}
