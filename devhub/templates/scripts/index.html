@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Scripts - DevHub{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Scripts</h2>
+  {% if current_user.is_admin %}
+  <a href="{{ url_for('scripts.new') }}" class="btn btn-primary">New Script</a>
+  {% endif %}
+</div>
+{% if scripts %}
+<ul class="list-group">
+  {% for s in scripts %}
+  <li class="list-group-item d-flex justify-content-between">
+    <a href="{{ url_for('scripts.view', slug=s.slug) }}">{{ s.name }}</a>
+    <span class="badge bg-info">{{ s.language }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="text-muted">No scripts found.</p>
+{% endif %}
+{% endblock %}

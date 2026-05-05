@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Reports - DevHub{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Progress Reports</h2>
+  <a href="{{ url_for('reports.new') }}" class="btn btn-primary">New Report</a>
+</div>
+{% if reports %}
+<ul class="list-group">
+  {% for r in reports %}
+  <li class="list-group-item d-flex justify-content-between">
+    <a href="{{ url_for('reports.view', id=r.id) }}">{{ r.title }}</a>
+    <span class="badge bg-secondary">{{ r.status }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="text-muted">No reports found.</p>
+{% endif %}
+{% endblock %}

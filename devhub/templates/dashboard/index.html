@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - DevHub{% endblock %}
+{% block content %}
+<h2>Dashboard</h2>
+<div class="row mt-4">
+  <div class="col-md-4">
+    <h4>Recent Projects</h4>
+    {% if projects %}
+    <ul class="list-group">
+      {% for p in projects %}
+      <li class="list-group-item">
+        <a href="{{ url_for('dashboard.project', slug=p.slug) }}">{{ p.name }}</a>
+        <span class="badge bg-secondary float-end">{{ p.status }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="text-muted">No projects yet.</p>{% endif %}
+  </div>
+  <div class="col-md-4">
+    <h4>Recent Reports</h4>
+    {% if reports %}
+    <ul class="list-group">
+      {% for r in reports %}
+      <li class="list-group-item">
+        <a href="{{ url_for('reports.view', id=r.id) }}">{{ r.title }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="text-muted">No reports yet.</p>{% endif %}
+  </div>
+  <div class="col-md-4">
+    <h4>Recent Docs</h4>
+    {% if docs %}
+    <ul class="list-group">
+      {% for d in docs %}
+      <li class="list-group-item">
+        <a href="{{ url_for('docs.view', slug=d.slug) }}">{{ d.title }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="text-muted">No docs yet.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}

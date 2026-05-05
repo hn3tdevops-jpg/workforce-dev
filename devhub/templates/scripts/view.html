@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}{% if script %}{{ script.name }}{% else %}New Script{% endif %} - DevHub{% endblock %}
+{% block content %}
+{% if edit %}
+<h2>{% if script %}Edit Script{% else %}New Script{% endif %}</h2>
+<form method="POST">
+  <div class="mb-3">
+    <label class="form-label">Name</label>
+    <input type="text" class="form-control" name="name" value="{{ script.name if script else '' }}" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Language</label>
+    <select class="form-select" name="language">
+      <option value="python" {% if not script or script.language == 'python' %}selected{% endif %}>Python</option>
+      <option value="bash" {% if script and script.language == 'bash' %}selected{% endif %}>Bash</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Description</label>
+    <input type="text" class="form-control" name="description" value="{{ script.description if script else '' }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Content</label>
+    <textarea class="form-control font-monospace" name="content" rows="12">{{ script.content if script else '' }}</textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Save</button>
+  <a href="{{ url_for('scripts.index') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% elif script %}
+<div class="d-flex justify-content-between align-items-center">
+  <h2>{{ script.name }}</h2>
+  {% if current_user.is_admin %}
+  <form method="POST" action="{{ url_for('scripts.run', slug=script.slug) }}">
+    <button type="submit" class="btn btn-warning">Run</button>
+  </form>
+  {% endif %}
+</div>
+<span class="badge bg-info">{{ script.language }}</span>
+<p class="mt-2">{{ script.description }}</p>
+<pre class="bg-light p-3 rounded"><code>{{ script.content }}</code></pre>
+{% endif %}
+{% endblock %}
