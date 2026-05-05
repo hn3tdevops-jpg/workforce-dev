@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ doc.title }} — Docs{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('docs.index') }}">Docs</a></li>
+                <li class="breadcrumb-item active">{{ doc.title }}</li>
+            </ol>
+        </nav>
+        <h2>{{ doc.title }}</h2>
+        <div class="d-flex gap-2 flex-wrap mb-2">
+            <span class="badge bg-secondary">{{ doc.doc_type }}</span>
+            <span class="badge bg-{% if doc.status == 'canonical' %}success{% elif doc.status == 'draft' %}warning text-dark{% elif doc.status == 'stale' %}secondary{% else %}light text-dark border{% endif %}">{{ doc.status }}</span>
+            {% if doc.project %}<a href="{{ url_for('projects.view', slug=doc.project.slug) }}" class="badge bg-info text-dark text-decoration-none">{{ doc.project.name }}</a>{% endif %}
+            {% for tag in doc.tags %}<span class="badge bg-light text-dark border">{{ tag.name }}</span>{% endfor %}
+        </div>
+        {% if doc.summary %}<p class="lead text-muted">{{ doc.summary }}</p>{% endif %}
+    </div>
+    <div class="col-auto">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('docs.edit', doc_id=doc.id) }}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i> Edit</a>
+        <form method="post" action="{{ url_for('docs.delete', doc_id=doc.id) }}" class="d-inline" onsubmit="return confirm('Delete this document?')">
+            {{ csrf_token_input() if csrf_token_input is defined }}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i></button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if doc.external_url %}
+<div class="alert alert-info">
+    <i class="bi bi-link-45deg"></i> External link: <a href="{{ doc.external_url }}" target="_blank" rel="noopener noreferrer">{{ doc.external_url }}</a>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body">
+        {% if doc.content %}
+        <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ doc.content }}</pre>
+        {% else %}
+        <p class="text-muted mb-0">No content.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="text-muted mt-3">
+    <small>Created: {{ doc.created_at.strftime('%Y-%m-%d %H:%M') if doc.created_at else '' }} &mdash; Updated: {{ doc.updated_at.strftime('%Y-%m-%d %H:%M') if doc.updated_at else '' }}</small>
+</div>
+{% endblock %}

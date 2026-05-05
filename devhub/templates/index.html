@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Workforce Dev Hub{% endblock %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="h3"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+        <p class="text-muted">Workforce Developer Hub — central platform for project management, documentation, and tooling.</p>
+    </div>
+    <div class="col-auto align-self-center">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('progress.new') }}" class="btn btn-primary me-1"><i class="bi bi-plus-circle"></i> Log Progress</a>
+        <a href="{{ url_for('docs.new') }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-plus"></i> New Doc</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Active Projects -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h5 class="text-uppercase text-muted fw-semibold mb-3"><i class="bi bi-folder2-open"></i> Active Projects</h5>
+        {% if projects %}
+        <div class="row row-cols-1 row-cols-md-3 g-3">
+            {% for project in projects %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <a href="{{ url_for('projects.view', slug=project.slug) }}" class="text-decoration-none">{{ project.name }}</a>
+                        </h6>
+                        <p class="card-text text-muted small">{{ project.description or 'No description.' }}</p>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <span class="badge bg-success">{{ project.status }}</span>
+                        <small class="text-muted">{{ project.progress_entries.count() }} entries</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">No active projects. <a href="{{ url_for('projects.index') }}">View all projects</a>.</div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent Progress -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-clock-history"></i> Recent Progress</strong>
+                <a href="{{ url_for('progress.index') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for entry in recent_progress %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <a href="{{ url_for('progress.view', entry_id=entry.id) }}" class="text-decoration-none text-dark">{{ entry.title }}</a>
+                        <span class="badge bg-{% if entry.status == 'completed' %}success{% elif entry.status == 'blocked' %}danger{% elif entry.status == 'in-progress' %}primary{% else %}secondary{% endif %} ms-2">{{ entry.status }}</span>
+                    </div>
+                    <small class="text-muted">{{ entry.entry_date.strftime('%Y-%m-%d') if entry.entry_date else '' }}{% if entry.project %} &mdash; {{ entry.project.name }}{% endif %}</small>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No progress entries yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Recent Docs -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-file-earmark-text"></i> Recent Docs</strong>
+                <a href="{{ url_for('docs.index') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for doc in recent_docs %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <a href="{{ url_for('docs.view', doc_id=doc.id) }}" class="text-decoration-none text-dark">{{ doc.title }}</a>
+                        <span class="badge bg-{% if doc.status == 'canonical' %}success{% elif doc.status == 'draft' %}warning text-dark{% elif doc.status == 'stale' %}secondary{% else %}light text-dark{% endif %} ms-2">{{ doc.status }}</span>
+                    </div>
+                    <small class="text-muted">{{ doc.updated_at.strftime('%Y-%m-%d') if doc.updated_at else '' }}{% if doc.project %} &mdash; {{ doc.project.name }}{% endif %}</small>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No documents yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Recent Packages -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-archive"></i> Recent Packages</strong>
+                <a href="{{ url_for('packages.index') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for pkg in recent_packages %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <a href="{{ url_for('packages.view', pkg_id=pkg.id) }}" class="text-decoration-none text-dark">{{ pkg.name or pkg.filename }}</a>
+                        <span class="badge bg-{% if pkg.status == 'approved' %}success{% elif pkg.status == 'installed' %}primary{% elif pkg.status == 'rejected' %}danger{% else %}warning text-dark{% endif %} ms-2">{{ pkg.status }}</span>
+                    </div>
+                    <small class="text-muted">{{ pkg.uploaded_at.strftime('%Y-%m-%d') if pkg.uploaded_at else '' }}{% if pkg.version %} v{{ pkg.version }}{% endif %}</small>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No packages uploaded yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Recent Files -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-files"></i> Recently Modified Files</strong>
+                <a href="{{ url_for('main.files') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for f in recent_files %}
+                <li class="list-group-item">
+                    <small class="font-monospace text-break">{{ f.file_path }}</small>
+                    <div class="text-muted" style="font-size:0.75rem;">{{ f.last_modified.strftime('%Y-%m-%d %H:%M') if f.last_modified else '' }} &mdash; {{ f.size_bytes or 0 }} bytes</div>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No files tracked. Run <code>flask scan --root /path</code> to index files.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
