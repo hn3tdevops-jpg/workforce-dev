@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 from datetime import datetime
 
 from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
@@ -57,10 +58,11 @@ def upload():
             flash("Only zip files are allowed.", "danger")
             return redirect(url_for("packages.upload"))
 
-        filename = secure_filename(file.filename)
+        original_filename = secure_filename(file.filename)
+        stored_filename = f"{uuid.uuid4().hex}_{original_filename}"
         quarantine_dir = current_app.config.get("QUARANTINE_DIR", "quarantine")
         os.makedirs(quarantine_dir, exist_ok=True)
-        save_path = os.path.join(quarantine_dir, filename)
+        save_path = os.path.join(quarantine_dir, stored_filename)
         file.save(save_path)
 
         workspace_roots = current_app.config.get("WORKSPACE_ROOTS", [])
@@ -68,7 +70,7 @@ def upload():
 
         manifest_data = json.dumps(result.get("manifest") or {})
         pkg = Package(
-            filename=filename,
+            filename=original_filename,
             quarantine_path=save_path,
             manifest_valid=result["valid"],
             manifest_data=manifest_data,
@@ -90,13 +92,13 @@ def upload():
             action="package_upload",
             resource_type="package",
             user_email=current_user.email,
-            details=f"Uploaded {filename}, valid={result['valid']}",
+            details=f"Uploaded {original_filename}, valid={result['valid']}",
         )
         db.session.add(audit)
         db.session.commit()
 
         if result["valid"]:
-            flash(f"Package uploaded and validated: {filename}", "success")
+            flash(f"Package uploaded and validated: {original_filename}", "success")
         else:
             flash(f"Package uploaded but validation failed: {result['error']}", "warning")
 

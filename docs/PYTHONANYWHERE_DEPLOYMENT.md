@@ -41,10 +41,11 @@ nano .env
 ```
 
 At minimum, set:
-- `DEVHUB_SECRET_KEY` — a long random string
+- `DEVHUB_SECRET_KEY` — a long, random, unique string (required; the app will refuse to start in production without it)
 - `DEVHUB_DATABASE_URL` — e.g. `sqlite:////home/yourusername/workforce-dev/devhub.db`
 - `DEVHUB_ADMIN_EMAIL`
 - `DEVHUB_ADMIN_PASSWORD`
+- `DEVHUB_ENV=production` — activates startup validation (rejects placeholder secret key)
 
 ### 5. Initialize the Database
 

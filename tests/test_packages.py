@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import tempfile
@@ -97,3 +98,61 @@ def test_invalid_risk_level():
         result = validate_package(zip_path)
         assert result["valid"] is False
         assert "risk_level" in result["error"]
+
+
+def make_zip_bytes(manifest_overrides=None):
+    """Return a valid package zip as bytes."""
+    manifest = {
+        "package_key": "test-pkg",
+        "name": "Test Package",
+        "version": "1.0.0",
+        "description": "A test package",
+        "target_project": "workforce-devhub",
+        "intended_paths": ["src/test.py"],
+        "install_steps": ["copy files"],
+        "rollback_notes": "delete copied files",
+        "risk_level": "safe",
+        "requires_manual_review": True,
+    }
+    if manifest_overrides:
+        manifest.update(manifest_overrides)
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        zf.writestr("devhub-package.json", json.dumps(manifest))
+        zf.writestr("src/test.py", "print('hello')")
+    return buf.getvalue()
+
+
+def test_upload_duplicate_filename_no_overwrite(client, app, admin_user):
+    """Two uploads with the same original filename must produce distinct quarantine paths."""
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
+
+    zip_data = make_zip_bytes()
+
+    resp1 = client.post(
+        "/packages/upload",
+        data={"file": (io.BytesIO(zip_data), "mypackage.zip")},
+        content_type="multipart/form-data",
+        follow_redirects=True,
+    )
+    resp2 = client.post(
+        "/packages/upload",
+        data={"file": (io.BytesIO(zip_data), "mypackage.zip")},
+        content_type="multipart/form-data",
+        follow_redirects=True,
+    )
+
+    assert resp1.status_code == 200
+    assert resp2.status_code == 200
+
+    with app.app_context():
+        from devhub.models import Package
+
+        pkgs = Package.query.filter_by(filename="mypackage.zip").all()
+        assert len(pkgs) >= 2, "Both uploads must be recorded"
+        paths = [p.quarantine_path for p in pkgs]
+        assert len(set(paths)) == len(paths), (
+            "Duplicate quarantine paths — files would overwrite each other!"
+        )

@@ -2,10 +2,9 @@ import os
 import sys
 from functools import wraps
 
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
-from devhub.extensions import db
 from devhub.models import AuditLog, User
 
 bp = Blueprint("admin", __name__)
