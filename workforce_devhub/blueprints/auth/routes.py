@@ -1,4 +1,5 @@
 from datetime import datetime
+from urllib.parse import urlsplit
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
@@ -22,6 +23,9 @@ def login():
             db.session.commit()
             login_user(user, remember=form.remember_me.data)
             next_page = request.args.get('next')
+            # Validate next_page to prevent open redirect to external URLs
+            if next_page and (urlsplit(next_page).netloc != '' or urlsplit(next_page).scheme != ''):
+                next_page = None
             return redirect(next_page or url_for('main.index'))
         flash('Invalid username or password.', 'danger')
     return render_template('auth/login.html', form=form)
