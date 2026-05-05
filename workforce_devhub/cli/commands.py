@@ -105,11 +105,11 @@ def create_admin_command():
 @with_appcontext
 def validate_package_command(path):
     """Validate a package zip file."""
-    from ..blueprints.packages.routes import _validate_package_zip
+    from ..blueprints.packages.routes import validate_package_zip
     if not os.path.exists(path):
         click.echo(f'File not found: {path}')
         return
-    manifest, errors = _validate_package_zip(path)
+    manifest, errors = validate_package_zip(path)
     if errors:
         click.echo('Validation FAILED:')
         for e in errors:

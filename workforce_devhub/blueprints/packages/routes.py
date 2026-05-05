@@ -29,7 +29,7 @@ class UploadPackageForm(FlaskForm):
     submit = SubmitField('Upload Package')
 
 
-def _validate_package_zip(filepath):
+def validate_package_zip(filepath):
     """Validate a .zip package. Returns (manifest_dict, errors_list)."""
     errors = []
     manifest = None
@@ -113,7 +113,7 @@ def upload():
         save_path = os.path.join(quarantine_dir, filename)
         f.save(save_path)
 
-        manifest, errors = _validate_package_zip(save_path)
+        manifest, errors = validate_package_zip(save_path)
 
         if errors:
             os.remove(save_path)

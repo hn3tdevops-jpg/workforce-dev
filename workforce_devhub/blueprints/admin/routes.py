@@ -99,4 +99,5 @@ def edit_project(project_id):
         project.status = form.status.data
         db.session.commit()
         flash('Project updated.', 'success')
-    return redirect(url_for('admin.index'))
+        return redirect(url_for('admin.index'))
+    return render_template('admin/edit_project.html', form=form, project=project)

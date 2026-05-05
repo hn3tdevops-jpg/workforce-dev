@@ -24,7 +24,7 @@ def login():
             login_user(user, remember=form.remember_me.data)
             next_page = request.args.get('next')
             # Validate next_page to prevent open redirect to external URLs
-            if next_page and (urlsplit(next_page).netloc != '' or urlsplit(next_page).scheme != ''):
+            if next_page and (urlsplit(next_page).netloc or urlsplit(next_page).scheme):
                 next_page = None
             return redirect(next_page or url_for('main.index'))
         flash('Invalid username or password.', 'danger')

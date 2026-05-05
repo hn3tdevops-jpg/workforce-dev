@@ -110,4 +110,5 @@ def report():
         projects=projects,
         selected_project=project_id,
         since=since,
+        now=datetime.utcnow,
     )

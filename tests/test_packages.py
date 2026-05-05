@@ -1,7 +1,7 @@
 import io
 import json
 import zipfile
-from workforce_devhub.blueprints.packages.routes import _validate_package_zip
+from workforce_devhub.blueprints.packages.routes import validate_package_zip
 import os
 
 
@@ -37,7 +37,7 @@ def test_valid_package(tmp_path):
     zip_path = str(tmp_path / 'valid.zip')
     with open(zip_path, 'wb') as f:
         f.write(zip_bytes)
-    manifest, errors = _validate_package_zip(zip_path)
+    manifest, errors = validate_package_zip(zip_path)
     assert errors == []
     assert manifest['name'] == 'Test Package'
 
@@ -47,7 +47,7 @@ def test_missing_manifest(tmp_path):
     zip_path = str(tmp_path / 'no_manifest.zip')
     with open(zip_path, 'wb') as f:
         f.write(zip_bytes)
-    manifest, errors = _validate_package_zip(zip_path)
+    manifest, errors = validate_package_zip(zip_path)
     assert any('manifest' in e.lower() for e in errors)
 
 
@@ -57,7 +57,7 @@ def test_missing_manifest_keys(tmp_path):
     zip_path = str(tmp_path / 'partial.zip')
     with open(zip_path, 'wb') as f:
         f.write(zip_bytes)
-    manifest, errors = _validate_package_zip(zip_path)
+    manifest, errors = validate_package_zip(zip_path)
     assert any('Missing manifest keys' in e for e in errors)
 
 
@@ -66,7 +66,7 @@ def test_path_traversal_in_zip_entries(tmp_path):
     zip_path = str(tmp_path / 'traversal.zip')
     with open(zip_path, 'wb') as f:
         f.write(zip_bytes)
-    manifest, errors = _validate_package_zip(zip_path)
+    manifest, errors = validate_package_zip(zip_path)
     assert any('traversal' in e.lower() or '..' in e for e in errors)
 
 
@@ -77,7 +77,7 @@ def test_path_traversal_in_intended_paths(tmp_path):
     zip_path = str(tmp_path / 'bad_paths.zip')
     with open(zip_path, 'wb') as f:
         f.write(zip_bytes)
-    manifest, errors = _validate_package_zip(zip_path)
+    manifest, errors = validate_package_zip(zip_path)
     assert any('traversal' in e.lower() or '..' in e for e in errors)
 
 
@@ -85,7 +85,7 @@ def test_not_a_zip(tmp_path):
     path = str(tmp_path / 'notazip.zip')
     with open(path, 'wb') as f:
         f.write(b'not a zip file')
-    manifest, errors = _validate_package_zip(path)
+    manifest, errors = validate_package_zip(path)
     assert errors
 
 
