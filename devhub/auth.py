@@ -1,6 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_wtf import FlaskForm
+from urllib.parse import urlparse
 from wtforms import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, Email
 
@@ -8,6 +9,13 @@ from devhub.extensions import db
 from devhub.models import User
 
 bp = Blueprint("auth", __name__)
+
+
+def _is_safe_url(target: str) -> bool:
+    """Return True only for relative URLs on the same host."""
+    ref = urlparse(request.host_url)
+    tgt = urlparse(target)
+    return tgt.scheme in ("", "http", "https") and ref.netloc == tgt.netloc
 
 
 class LoginForm(FlaskForm):
@@ -29,10 +37,9 @@ def login():
             return redirect(url_for("auth.login"))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get("next")
-        # Prevent open redirect: only allow relative paths starting with /
-        if next_page and (not next_page.startswith("/") or next_page.startswith("//")):
-            next_page = None
-        return redirect(next_page or url_for("main.index"))
+        if next_page and _is_safe_url(next_page):
+            return redirect(next_page)
+        return redirect(url_for("main.index"))
     return render_template("login.html", form=form)
 
 
