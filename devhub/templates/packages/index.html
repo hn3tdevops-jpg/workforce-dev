@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Packages — Workforce Dev Hub{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2><i class="bi bi-archive"></i> Packages</h2>
+        {% if not install_enabled %}
+        <div class="alert alert-info py-1 px-3 d-inline-block">
+            <small><i class="bi bi-info-circle"></i> Package installation is <strong>disabled</strong>. Set <code>DEVHUB_ENABLE_PACKAGE_INSTALL=true</code> to enable.</small>
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-auto">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('packages.upload') }}" class="btn btn-primary"><i class="bi bi-cloud-upload"></i> Upload Package</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if packages %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Name / Filename</th>
+                <th>Version</th>
+                <th>Risk</th>
+                <th>Manifest</th>
+                <th>Status</th>
+                <th>Uploaded</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pkg in packages %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('packages.view', pkg_id=pkg.id) }}" class="fw-semibold text-decoration-none">{{ pkg.name or pkg.filename }}</a>
+                    {% if pkg.description %}<br><small class="text-muted">{{ pkg.description[:60] }}{% if pkg.description|length > 60 %}…{% endif %}</small>{% endif %}
+                </td>
+                <td><small>{{ pkg.version or '—' }}</small></td>
+                <td><span class="badge bg-{% if pkg.risk_level == 'safe' %}success{% elif pkg.risk_level == 'moderate' %}warning text-dark{% else %}danger{% endif %}">{{ pkg.risk_level }}</span></td>
+                <td>{% if pkg.manifest_valid %}<span class="badge bg-success"><i class="bi bi-check-circle"></i> Valid</span>{% else %}<span class="badge bg-danger"><i class="bi bi-x-circle"></i> Invalid</span>{% endif %}</td>
+                <td><span class="badge bg-{% if pkg.status == 'approved' %}success{% elif pkg.status == 'installed' %}primary{% elif pkg.status == 'rejected' %}danger{% else %}warning text-dark{% endif %}">{{ pkg.status }}</span></td>
+                <td><small class="text-muted">{{ pkg.uploaded_at.strftime('%Y-%m-%d') if pkg.uploaded_at else '' }}</small></td>
+                <td><a href="{{ url_for('packages.view', pkg_id=pkg.id) }}" class="btn btn-sm btn-outline-secondary">View</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">No packages uploaded yet.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Progress Report — Dev Hub{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2><i class="bi bi-bar-chart-line"></i> Progress Report</h2>
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-2">
+        <select name="days" class="form-select">
+            <option value="7" {% if days == 7 %}selected{% endif %}>Last 7 days</option>
+            <option value="14" {% if days == 14 %}selected{% endif %}>Last 14 days</option>
+            <option value="30" {% if days == 30 %}selected{% endif %}>Last 30 days</option>
+            <option value="90" {% if days == 90 %}selected{% endif %}>Last 90 days</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="project_id" class="form-select">
+            <option value="">All Projects</option>
+            {% for p in projects %}
+            <option value="{{ p.id }}" {% if request.args.get('project_id', type=int) == p.id %}selected{% endif %}>{{ p.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Generate</button>
+    </div>
+</form>
+
+<!-- Summary stats -->
+{% set completed = entries | selectattr('status', 'equalto', 'completed') | list %}
+{% set blocked = entries | selectattr('status', 'equalto', 'blocked') | list %}
+{% set in_progress = entries | selectattr('status', 'equalto', 'in-progress') | list %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-center border-success">
+            <div class="card-body">
+                <h3 class="text-success">{{ completed | length }}</h3>
+                <div class="text-muted">Completed</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center border-primary">
+            <div class="card-body">
+                <h3 class="text-primary">{{ in_progress | length }}</h3>
+                <div class="text-muted">In Progress</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center border-danger">
+            <div class="card-body">
+                <h3 class="text-danger">{{ blocked | length }}</h3>
+                <div class="text-muted">Blocked</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center border-secondary">
+            <div class="card-body">
+                <h3 class="text-secondary">{{ entries | length }}</h3>
+                <div class="text-muted">Total ({{ days }}d)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if entries %}
+<div class="list-group">
+    {% for entry in entries %}
+    <a href="{{ url_for('progress.view', entry_id=entry.id) }}" class="list-group-item list-group-item-action">
+        <div class="d-flex justify-content-between align-items-center">
+            <strong>{{ entry.title }}</strong>
+            <span class="badge bg-{% if entry.status == 'completed' %}success{% elif entry.status == 'blocked' %}danger{% elif entry.status == 'in-progress' %}primary{% else %}secondary{% endif %}">{{ entry.status }}</span>
+        </div>
+        {% if entry.description %}<small class="text-muted">{{ entry.description[:100] }}{% if entry.description|length > 100 %}…{% endif %}</small>{% endif %}
+        <div class="mt-1"><small class="text-muted">{{ entry.entry_date.strftime('%Y-%m-%d') if entry.entry_date else '' }}{% if entry.project %} &mdash; {{ entry.project.name }}{% endif %}</small></div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">No progress entries in the last {{ days }} days.</div>
+{% endif %}
+{% endblock %}

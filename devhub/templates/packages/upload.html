@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Upload Package — Dev Hub{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('packages.index') }}">Packages</a></li>
+                <li class="breadcrumb-item active">Upload</li>
+            </ol>
+        </nav>
+        <h2><i class="bi bi-cloud-upload"></i> Upload Package</h2>
+        <p class="text-muted">Upload a <code>.zip</code> package file containing a valid <code>devhub-package.json</code> manifest.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label for="file" class="form-label fw-semibold">Package File (.zip)</label>
+                        <input type="file" class="form-control" name="file" id="file" accept=".zip" required>
+                        <div class="form-text">Maximum 50MB. Must be a .zip file containing <code>devhub-package.json</code>.</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-cloud-upload"></i> Upload & Validate</button>
+                        <a href="{{ url_for('packages.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-4">
+            <div class="card-header"><strong><i class="bi bi-info-circle"></i> Required Manifest Fields</strong></div>
+            <ul class="list-group list-group-flush small">
+                <li class="list-group-item"><code>package_key</code> &mdash; Unique identifier</li>
+                <li class="list-group-item"><code>name</code> &mdash; Human-readable name</li>
+                <li class="list-group-item"><code>version</code> &mdash; Semantic version</li>
+                <li class="list-group-item"><code>description</code> &mdash; Package description</li>
+                <li class="list-group-item"><code>target_project</code> &mdash; Target project slug</li>
+                <li class="list-group-item"><code>intended_paths</code> &mdash; Array of target file paths</li>
+                <li class="list-group-item"><code>install_steps</code> &mdash; Array of install steps</li>
+                <li class="list-group-item"><code>rollback_notes</code> &mdash; How to rollback</li>
+                <li class="list-group-item"><code>risk_level</code> &mdash; <code>safe</code>, <code>moderate</code>, or <code>dangerous</code></li>
+                <li class="list-group-item"><code>requires_manual_review</code> &mdash; Boolean</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

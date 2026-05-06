@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }} — Projects{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('projects.index') }}">Projects</a></li>
+                <li class="breadcrumb-item active">{{ project.name }}</li>
+            </ol>
+        </nav>
+        <h2>{{ project.name }}</h2>
+        <p class="text-muted">{{ project.description or '' }}</p>
+        <div class="d-flex gap-2 flex-wrap">
+            <span class="badge bg-{% if project.status == 'active' %}success{% elif project.status == 'paused' %}warning text-dark{% else %}secondary{% endif %}">{{ project.status }}</span>
+            {% if project.repo_url %}<a href="{{ project.repo_url }}" target="_blank" rel="noopener noreferrer" class="badge bg-dark text-decoration-none"><i class="bi bi-github"></i> Repo</a>{% endif %}
+        </div>
+    </div>
+    <div class="col-auto">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('projects.edit', slug=project.slug) }}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i> Edit</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-clock-history"></i> Recent Progress</strong>
+                <a href="{{ url_for('progress.index', project_id=project.id) }}" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for entry in recent_progress %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('progress.view', entry_id=entry.id) }}" class="text-decoration-none">{{ entry.title }}</a>
+                        <span class="badge bg-{% if entry.status == 'completed' %}success{% elif entry.status == 'blocked' %}danger{% elif entry.status == 'in-progress' %}primary{% else %}secondary{% endif %}">{{ entry.status }}</span>
+                    </div>
+                    <small class="text-muted">{{ entry.entry_date.strftime('%Y-%m-%d') if entry.entry_date else '' }}</small>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No entries yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-file-earmark-text"></i> Recent Docs</strong>
+                <a href="{{ url_for('docs.index', project_id=project.id) }}" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for doc in recent_docs %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('docs.view', doc_id=doc.id) }}" class="text-decoration-none">{{ doc.title }}</a>
+                        <span class="badge bg-{% if doc.status == 'canonical' %}success{% else %}secondary{% endif %}">{{ doc.status }}</span>
+                    </div>
+                    <small class="text-muted">{{ doc.updated_at.strftime('%Y-%m-%d') if doc.updated_at else '' }}</small>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No docs yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    {% if scripts %}
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header"><strong><i class="bi bi-terminal"></i> Scripts</strong></div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr><th>Name</th><th>Risk</th><th>Last Run</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {% for s in scripts %}
+                        <tr>
+                            <td><a href="{{ url_for('scripts.view', script_id=s.id) }}">{{ s.name }}</a></td>
+                            <td><span class="badge bg-{% if s.risk_level == 'safe' %}success{% elif s.risk_level == 'moderate' %}warning text-dark{% else %}danger{% endif %}">{{ s.risk_level }}</span></td>
+                            <td>{% if s.last_run_at %}<small>{{ s.last_run_at.strftime('%Y-%m-%d') }}</small>{% else %}<small class="text-muted">Never</small>{% endif %}</td>
+                            <td><a href="{{ url_for('scripts.view', script_id=s.id) }}" class="btn btn-sm btn-outline-secondary">View</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
