@@ -2,6 +2,7 @@ import json
 import os
 import re
 import zipfile
+from pathlib import Path
 
 REQUIRED_MANIFEST_FIELDS = [
     "package_key",
@@ -17,6 +18,23 @@ REQUIRED_MANIFEST_FIELDS = [
 ]
 
 MANIFEST_FILENAME = "devhub-package.json"
+
+
+def _is_within_root(path_str, root_str):
+    """Return True iff the resolved path_str is inside (or equal to) resolved root_str.
+
+    Uses Path.resolve() + os.path.commonpath() to prevent prefix-escape attacks such as
+    /workspace_api_evil escaping root /workspace_api, and to normalise ``..`` / ``.``
+    segments and redundant slashes before comparison.
+    """
+    try:
+        resolved = str(Path(path_str).resolve())
+        resolved_root = str(Path(root_str).resolve())
+        common = os.path.commonpath([resolved, resolved_root])
+        return common == resolved_root
+    except ValueError:
+        # commonpath raises ValueError on mixed drive roots on Windows — treat as unsafe
+        return False
 
 
 def validate_package(zip_path, workspace_roots=None):
@@ -76,21 +94,42 @@ def validate_package(zip_path, workspace_roots=None):
             if workspace_roots:
                 for path in manifest.get("intended_paths", []):
                     if os.path.isabs(path):
-                        if not any(path.startswith(root) for root in workspace_roots):
+                        if not any(_is_within_root(path, root) for root in workspace_roots):
                             return {
                                 "valid": False,
                                 "error": f"Path {path} escapes workspace roots",
                                 "manifest": manifest,
                             }
-                    elif ".." in path:
-                        return {
-                            "valid": False,
-                            "error": f"Path traversal in intended_path: {path}",
-                            "manifest": manifest,
-                        }
+                    else:
+                        # Resolve relative paths against each root and verify containment
+                        for root in workspace_roots:
+                            candidate = os.path.join(root, path)
+                            if not _is_within_root(candidate, root):
+                                return {
+                                    "valid": False,
+                                    "error": f"Path traversal in intended_path: {path}",
+                                    "manifest": manifest,
+                                }
             else:
                 for path in manifest.get("intended_paths", []):
-                    if ".." in path or os.path.isabs(path):
+                    if os.path.isabs(path):
+                        return {
+                            "valid": False,
+                            "error": f"Unsafe absolute path in intended_paths: {path}",
+                            "manifest": manifest,
+                        }
+                    # Resolve relative path and ensure it stays below a safe sentinel root
+                    sentinel = Path("/safe_root")
+                    try:
+                        resolved = (sentinel / path).resolve()
+                        os.path.commonpath([str(resolved), str(sentinel)])
+                        if not str(resolved).startswith(str(sentinel)):
+                            return {
+                                "valid": False,
+                                "error": f"Path traversal in intended_paths: {path}",
+                                "manifest": manifest,
+                            }
+                    except Exception:
                         return {
                             "valid": False,
                             "error": f"Unsafe path in intended_paths: {path}",

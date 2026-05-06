@@ -16,7 +16,7 @@
             {% for tag in script.tags %}<span class="badge bg-light text-dark border">{{ tag.name }}</span>{% endfor %}
         </div>
         {% if not execution_enabled %}
-        <div class="alert alert-warning py-1 px-3"><small><i class="bi bi-shield-exclamation"></i> Script execution is disabled.</small></div>
+        <div class="alert alert-info py-1 px-3"><small><i class="bi bi-info-circle"></i> Script catalog — commands shown for reference only. Execution is not available in this version.</small></div>
         {% endif %}
     </div>
     <div class="col-auto">

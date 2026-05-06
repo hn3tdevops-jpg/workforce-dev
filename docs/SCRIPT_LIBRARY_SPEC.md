@@ -29,23 +29,23 @@ Each script has a `risk_level` that describes its potential impact:
 
 ## Execution Policy
 
-Script execution is **disabled by default**. This is controlled by:
+Script execution is **disabled by default** and is **not yet implemented** in the current version.
+This is controlled by:
 
 ```
-DEVHUB_ENABLE_SCRIPT_EXECUTION=false   ← default
+DEVHUB_ENABLE_SCRIPT_EXECUTION=false   ← default (and only supported value)
 ```
 
-When `false`:
+When `false` (current behavior):
 - No script commands are executed, regardless of UI actions.
 - The script catalog is a **read-only reference library**.
-- The "Run" button is hidden or disabled in the UI.
 - `script_runner.py` raises `NotImplementedError`.
 
-When `true` (explicitly opted in):
-- Scripts can be executed from the UI.
-- All runs are logged to `ScriptRunLog` with: script ID, user, stdout, stderr, exit code, duration, start time.
-- A timeout limit is enforced.
-- Only `is_active=True` scripts can be run.
+When `true` (reserved for a future release — not yet implemented):
+- A controlled allowlisted runner will be implemented with safe directories, timeout,
+  audit logs, and dry-run support.
+- All runs will be logged to `ScriptRunLog`.
+- Do not set this to `true` in the current version — it has no effect beyond the flag.
 
 ## Dry-Run Pattern
 

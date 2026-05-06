@@ -16,15 +16,15 @@ def create_app(config_class=Config):
     login_manager.login_view = "auth.login"
     login_manager.login_message_category = "warning"
 
-    from devhub.routes.main import bp as main_bp
+    from devhub.auth import bp as auth_bp
     from devhub.routes.admin import bp as admin_bp
     from devhub.routes.api import bp as api_bp
     from devhub.routes.docs import bp as docs_bp
-    from devhub.routes.projects import bp as projects_bp
-    from devhub.routes.progress import bp as progress_bp
-    from devhub.routes.scripts import bp as scripts_bp
+    from devhub.routes.main import bp as main_bp
     from devhub.routes.packages import bp as packages_bp
-    from devhub.auth import bp as auth_bp
+    from devhub.routes.progress import bp as progress_bp
+    from devhub.routes.projects import bp as projects_bp
+    from devhub.routes.scripts import bp as scripts_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp, url_prefix="/admin")

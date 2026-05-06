@@ -1,8 +1,9 @@
 import sys
 from datetime import datetime
+
 from flask import Blueprint, jsonify, request
 
-from devhub.models import Document, Package, ProgressEntry, Project, Script
+from devhub.models import Document, ProgressEntry, Project, Script
 from devhub.search import search_all
 
 bp = Blueprint("api", __name__)

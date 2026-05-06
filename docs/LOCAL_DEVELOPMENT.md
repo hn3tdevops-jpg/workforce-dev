@@ -23,9 +23,7 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with your preferred values
 
-# Initialize the database and run migrations
-FLASK_APP=wsgi.py flask db init
-FLASK_APP=wsgi.py flask db migrate -m "initial"
+# Apply existing migrations (do NOT run flask db init on a cloned repo — migrations already exist)
 FLASK_APP=wsgi.py flask db upgrade
 
 # Create an admin user

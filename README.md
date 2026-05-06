@@ -22,8 +22,6 @@ cd workforce-dev
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-FLASK_APP=wsgi.py flask db init
-FLASK_APP=wsgi.py flask db migrate -m "initial"
 FLASK_APP=wsgi.py flask db upgrade
 FLASK_APP=wsgi.py flask seed
 FLASK_APP=wsgi.py flask run

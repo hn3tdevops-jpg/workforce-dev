@@ -13,10 +13,31 @@ Workforce Dev Hub is designed as an internal developer tool. This document descr
 
 ## Authorization
 
-- Most read-only views are public within the application (no authentication required).
-- Write operations (create, edit, delete) require the user to be **logged in**.
-- Admin-only operations (approve packages, view audit log, manage users) require `is_admin=True`.
-- The `admin_required` decorator enforces this at the route level.
+The app enforces a deliberately simple access policy suited for an internal developer tool:
+
+### Public (no login required)
+- All read-only views: docs index/view, progress index/view/report, scripts index/view,
+  packages index/view, projects index/view, search, main dashboard.
+- JSON API endpoints: `/api/status`, `/api/search`, `/api/projects`, `/api/docs`,
+  `/api/scripts`, `/api/progress/recent`.
+
+**Rationale:** The app is intended for deployment inside a trusted network or behind
+PythonAnywhere account-level access controls. Public read-only access simplifies
+collaboration within the internal team.
+
+### Login required
+- All write operations: create, edit, delete documents; create/edit progress entries;
+  create/edit scripts; upload packages.
+
+### Admin required (`is_admin=True`)
+- Package approval, install triggering.
+- User management (`/admin/users`).
+- Audit log (`/admin/audit`).
+- Settings page (`/admin/settings`).
+
+> **Production note:** If the hub will be exposed beyond your trusted network, add
+> `@login_required` to the read-only views and API endpoints in `devhub/routes/`.
+> See `docs/LOCAL_DEVELOPMENT.md` for configuration guidance.
 
 ## Package Security
 
@@ -36,8 +57,9 @@ Packages go through a strict quarantine workflow:
 ### Path Traversal Prevention
 
 - Zip entries are checked for `..`, leading `/`, and absolute paths.
-- Manifest `intended_paths` are checked for `..` and absolute paths not within configured workspace roots.
-- `os.path.abspath` and path prefix checks are used for workspace root validation.
+- Manifest `intended_paths` are validated using `pathlib.Path.resolve()` and
+  `os.path.commonpath()` to prevent prefix-escape attacks (e.g., `/workspace_api_evil`
+  escaping root `/workspace_api`) and to normalise `..`/`.` segments and redundant slashes.
 
 ## Script Execution Security
 
