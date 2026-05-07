@@ -18,7 +18,7 @@
     <div class="col-lg-6">
         <div class="card shadow-sm">
             <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data" data-submit-loading>
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label for="file" class="form-label fw-semibold">Package File (.zip)</label>

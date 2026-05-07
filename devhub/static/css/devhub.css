@@ -1,279 +1,130 @@
-/* ============================================================
-   Workforce Dev Hub — Custom Styles
-   Light professional theme for an internal developer console
-   ============================================================ */
-
-/* ----------------------------------------------------------
-   Color tokens
-   ---------------------------------------------------------- */
+/* Workforce Dev Hub - UI tokens and layout */
 :root {
-    --dh-topbar-bg:       #1e2430;
-    --dh-topbar-border:   #2d3548;
-    --dh-brand-color:     #7eb3f5;
-    --dh-nav-link:        #c8d0de;
-    --dh-nav-link-hover:  #ffffff;
-    --dh-nav-active-bg:   rgba(255,255,255,0.10);
-    --dh-footer-bg:       #1e2430;
-    --dh-footer-text:     #8899aa;
-    --dh-body-bg:         #f4f6f9;
-    --dh-card-shadow:     0 1px 4px rgba(0,0,0,0.08);
-    --dh-card-hover-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    --dh-stat-value-color:#1e2430;
-    --dh-section-heading: #3d4a5c;
-    --dh-login-bg:        #edf0f5;
+    --devhub-bg: #f3f6fb;
+    --devhub-surface: #ffffff;
+    --devhub-text: #1f2937;
+    --devhub-muted: #64748b;
+    --devhub-border: #dbe2ee;
+    --devhub-brand: #2a5bd7;
+    --devhub-brand-dark: #234bb2;
 }
 
-/* ----------------------------------------------------------
-   Base layout
-   ---------------------------------------------------------- */
-body {
-    background-color: var(--dh-body-bg);
+body.devhub-body {
+    background: var(--devhub-bg);
+    color: var(--devhub-text);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    font-size: 0.9375rem;
 }
 
-main {
-    flex: 1;
+.topbar,
+.footer,
+.card,
+.offcanvas,
+.sidebar {
+    background: var(--devhub-surface);
 }
 
-/* ----------------------------------------------------------
-   Topbar (navbar)
-   ---------------------------------------------------------- */
-.dh-topbar {
-    background-color: var(--dh-topbar-bg);
-    border-bottom: 1px solid var(--dh-topbar-border);
-    padding-top: 0;
-    padding-bottom: 0;
-    min-height: 54px;
+.app-shell-body {
+    min-height: calc(100vh - 59px);
 }
 
-.dh-brand {
-    color: var(--dh-brand-color) !important;
-    font-size: 1rem;
-    letter-spacing: 0.02em;
-    padding: 0.75rem 0;
-}
-.dh-brand:hover { color: #fff !important; }
-
-.dh-topbar .navbar-nav .nav-link {
-    color: var(--dh-nav-link);
-    padding: 0.75rem 0.6rem;
-    border-radius: 4px;
-    transition: background-color 0.15s, color 0.15s;
-    font-size: 0.875rem;
-}
-.dh-topbar .navbar-nav .nav-link:hover {
-    color: var(--dh-nav-link-hover);
-    background-color: var(--dh-nav-active-bg);
-}
-.dh-topbar .navbar-nav .nav-link.active {
-    color: #ffffff !important;
-    background-color: var(--dh-nav-active-bg);
+.sidebar {
+    width: 250px;
+    position: sticky;
+    top: 0;
+    height: calc(100vh - 59px);
 }
 
-.dh-search-input {
-    background: rgba(255,255,255,0.07);
-    border-color: rgba(255,255,255,0.15);
-    color: #fff;
-    min-width: 180px;
-}
-.dh-search-input::placeholder { color: rgba(255,255,255,0.45); }
-.dh-search-input:focus {
-    background: rgba(255,255,255,0.12);
-    color: #fff;
-    border-color: rgba(255,255,255,0.35);
-    box-shadow: none;
+.sidebar .nav-link {
+    border-radius: 0.5rem;
+    color: var(--devhub-text);
+    padding: 0.55rem 0.75rem;
 }
 
-/* ----------------------------------------------------------
-   Footer
-   ---------------------------------------------------------- */
-.dh-footer {
-    background-color: var(--dh-footer-bg);
-    color: var(--dh-footer-text);
-    font-size: 0.82rem;
-    margin-top: auto;
-}
-.dh-footer-link {
-    color: var(--dh-footer-text);
-    text-decoration: none;
-}
-.dh-footer-link:hover { color: #fff; }
-
-/* ----------------------------------------------------------
-   Cards
-   ---------------------------------------------------------- */
-.card {
-    border: 1px solid #e3e8ef;
-    box-shadow: var(--dh-card-shadow);
-    transition: box-shadow 0.18s ease-in-out;
-}
-.card:hover {
-    box-shadow: var(--dh-card-hover-shadow) !important;
+.sidebar .nav-link:hover {
+    background: #eff3fa;
 }
 
-.dh-card-header {
+.sidebar .nav-link.active {
+    background: #e8eeff;
+    color: var(--devhub-brand-dark);
+    font-weight: 600;
+}
+
+.app-content {
+    max-width: 1400px;
+}
+
+.flash-stack .alert {
+    border: 0;
+}
+
+.stat-card .display-6 {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.health-card {
+    border: 1px solid var(--devhub-border);
+    border-radius: 0.75rem;
+    padding: 0.9rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.65rem 1rem;
-    background: #fff;
-    border-bottom: 1px solid #e3e8ef;
 }
 
-/* ----------------------------------------------------------
-   Dashboard stat cards
-   ---------------------------------------------------------- */
-.dh-stat-card {
-    border: 1px solid #e3e8ef;
-    cursor: pointer;
-    transition: box-shadow 0.18s ease-in-out, transform 0.15s ease-in-out;
-}
-.dh-stat-card:hover {
-    box-shadow: var(--dh-card-hover-shadow) !important;
-    transform: translateY(-2px);
-}
-.dh-stat-icon {
-    font-size: 1.6rem;
-    line-height: 1;
-    margin-bottom: 0.35rem;
-}
-.dh-stat-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--dh-stat-value-color);
-    line-height: 1.1;
-}
-.dh-stat-label {
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #6c757d;
-    margin-top: 0.2rem;
+.card {
+    border: 1px solid var(--devhub-border);
+    border-radius: 0.8rem;
 }
 
-/* Section headings */
-.dh-section-heading {
-    font-size: 0.82rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--dh-section-heading);
+.card:hover {
+    box-shadow: 0 0.35rem 1rem rgba(16, 24, 40, 0.08) !important;
 }
 
-/* ----------------------------------------------------------
-   Empty states
-   ---------------------------------------------------------- */
-.dh-empty-state {
-    text-align: center;
-    padding: 2.5rem 1rem;
-    color: #8899aa;
-}
-.dh-empty-icon {
-    font-size: 2.5rem;
-    display: block;
-    margin-bottom: 0.75rem;
-    color: #c8d0de;
-}
-.dh-empty-list-item {
-    color: #8899aa;
-    font-size: 0.875rem;
-    font-style: italic;
+.table-sm td,
+.table-sm th {
+    padding: 0.35rem 0.5rem;
 }
 
-/* ----------------------------------------------------------
-   Flash / alert enhancements
-   ---------------------------------------------------------- */
-.alert {
-    border-radius: 0.4rem;
-    font-size: 0.9rem;
+.btn-primary {
+    background-color: var(--devhub-brand);
+    border-color: var(--devhub-brand);
 }
 
-/* ----------------------------------------------------------
-   Login page
-   ---------------------------------------------------------- */
-.dh-login-body {
-    background: var(--dh-login-bg);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    padding: 1.5rem;
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--devhub-brand-dark);
+    border-color: var(--devhub-brand-dark);
 }
-.dh-login-wrap {
-    width: 100%;
-    max-width: 420px;
-}
-.dh-login-card {
-    border: 1px solid #dde3ee;
-}
-.dh-login-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #1e2430 0%, #2e4080 100%);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+
+.brand-mark {
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
     color: #fff;
-    font-size: 1.8rem;
+    font-size: 1.35rem;
+    background: linear-gradient(135deg, var(--devhub-brand), #4d7ff8);
 }
 
-/* ----------------------------------------------------------
-   Monospace / code blocks
-   ---------------------------------------------------------- */
+.login-body .auth-shell {
+    background: radial-gradient(circle at top right, #e7edff, #f6f9ff 45%, #f8fafc 80%);
+}
+
 pre {
-    background-color: #f4f6f9;
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
     padding: 0.75rem 1rem;
     font-size: 0.875em;
     overflow-x: auto;
 }
 
-/* Copy-to-clipboard button */
-.dh-copy-btn {
-    opacity: 0.6;
-    transition: opacity 0.15s;
-}
-.dh-copy-btn:hover { opacity: 1; }
-
-/* ----------------------------------------------------------
-   Status badges
-   ---------------------------------------------------------- */
-.badge-status-active   { background-color: #198754; }
-.badge-status-paused   { background-color: #ffc107; color: #212529; }
-.badge-status-archived { background-color: #6c757d; }
-
-/* Risk level colours */
-.risk-safe      { color: #198754; }
-.risk-moderate  { color: #fd7e14; }
-.risk-dangerous { color: #dc3545; }
-
-/* ----------------------------------------------------------
-   Tables
-   ---------------------------------------------------------- */
-.table-sm td, .table-sm th {
-    padding: 0.35rem 0.5rem;
-}
-
-/* ----------------------------------------------------------
-   Progress timeline indicator
-   ---------------------------------------------------------- */
-.entry-status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 6px;
-}
-
-/* ----------------------------------------------------------
-   Form labels
-   ---------------------------------------------------------- */
-.form-label.fw-semibold {
-    font-size: 0.9rem;
+@media (max-width: 991px) {
+    .app-content {
+        max-width: 100%;
+    }
 }

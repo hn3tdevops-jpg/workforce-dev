@@ -1,16 +1,13 @@
 {% extends "base.html" %}
+{% from "_ui.html" import page_header, empty_state %}
 {% block title %}Projects — Workforce Dev Hub{% endblock %}
 {% block content %}
-<div class="row mb-3">
-    <div class="col">
-        <h2><i class="bi bi-folder2-open"></i> Projects</h2>
-    </div>
-    <div class="col-auto">
-        {% if current_user.is_authenticated %}
-        <a href="{{ url_for('projects.new') }}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> New Project</a>
-        {% endif %}
-    </div>
-</div>
+{% set actions %}
+{% if current_user.is_authenticated %}
+<a href="{{ url_for('projects.new') }}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> New project</a>
+{% endif %}
+{% endset %}
+{{ page_header("Projects", "Monitor status and links across Workforce initiatives.", actions) }}
 
 <div class="row row-cols-1 row-cols-md-3 g-4">
     {% for project in projects %}
@@ -32,7 +29,7 @@
         </div>
     </div>
     {% else %}
-    <div class="col-12"><div class="alert alert-info">No projects yet.</div></div>
+    <div class="col-12">{{ empty_state("No projects yet", "Create a project to start organizing docs, progress, and scripts.") }}</div>
     {% endfor %}
 </div>
 {% endblock %}

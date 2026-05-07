@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, render_template, request
+from flask_login import login_required
 
 from devhub.models import Document, Package, ProgressEntry, Project, Script, TrackedFile
 from devhub.search import search_all
@@ -7,6 +8,7 @@ bp = Blueprint("main", __name__)
 
 
 @bp.route("/")
+@login_required
 def index():
     projects = Project.query.filter_by(status="active").all()
     recent_progress = ProgressEntry.query.order_by(ProgressEntry.entry_date.desc()).limit(5).all()

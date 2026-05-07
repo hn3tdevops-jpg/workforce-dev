@@ -18,13 +18,13 @@
     </div>
     <div class="col-auto d-flex gap-2 align-items-start">
         {% if current_user.is_authenticated and current_user.is_admin and pkg.manifest_valid and pkg.status == 'quarantined' %}
-        <form method="post" action="{{ url_for('packages.approve', pkg_id=pkg.id) }}">
+        <form method="post" action="{{ url_for('packages.approve', pkg_id=pkg.id) }}" data-confirm="Approve this package for install eligibility?">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Approve</button>
         </form>
         {% endif %}
         {% if install_enabled and pkg.status == 'approved' and current_user.is_authenticated and current_user.is_admin %}
-        <form method="post" action="{{ url_for('packages.install', pkg_id=pkg.id) }}" onsubmit="return confirm('Install this package?')">
+        <form method="post" action="{{ url_for('packages.install', pkg_id=pkg.id) }}" data-confirm="Install this package?">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-primary"><i class="bi bi-download"></i> Install</button>
         </form>
@@ -37,7 +37,11 @@
         <div class="card shadow-sm">
             <div class="card-header"><strong>Package Info</strong></div>
             <ul class="list-group list-group-flush">
-                <li class="list-group-item"><small class="text-muted">Filename</small><br><code>{{ pkg.filename }}</code></li>
+                <li class="list-group-item">
+                    <small class="text-muted">Filename</small><br>
+                    <code id="pkg-filename">{{ pkg.filename }}</code>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-copy-target="#pkg-filename">Copy</button>
+                </li>
                 {% if pkg.version %}<li class="list-group-item"><small class="text-muted">Version</small><br>{{ pkg.version }}</li>{% endif %}
                 {% if pkg.package_key %}<li class="list-group-item"><small class="text-muted">Package Key</small><br><code>{{ pkg.package_key }}</code></li>{% endif %}
                 {% if pkg.target_project %}<li class="list-group-item"><small class="text-muted">Target Project</small><br>{{ pkg.target_project }}</li>{% endif %}
@@ -46,6 +50,9 @@
                 {% if pkg.approved_by %}<li class="list-group-item"><small class="text-muted">Approved By</small><br>{{ pkg.approved_by }} on {{ pkg.approved_at.strftime('%Y-%m-%d') if pkg.approved_at else '' }}</li>{% endif %}
                 {% if pkg.requires_manual_review %}<li class="list-group-item text-warning"><small><i class="bi bi-exclamation-triangle"></i> Requires manual review before install</small></li>{% endif %}
             </ul>
+        </div>
+        <div class="alert alert-warning mt-3 mb-0">
+            <i class="bi bi-shield-lock"></i> Install actions stay admin-controlled and remain disabled unless <code>DEVHUB_ENABLE_PACKAGE_INSTALL=true</code> is explicitly set.
         </div>
     </div>
 

@@ -46,6 +46,7 @@
                                   placeholder="you@example.com",
                                   autocomplete="email",
                                   **{"aria-describedby": "emailHelp"}) }}
+                    <div id="emailHelp" class="form-text">Enter your registered email address.</div>
                     {% for error in form.email.errors %}
                     <div class="invalid-feedback">{{ error }}</div>
                     {% endfor %}

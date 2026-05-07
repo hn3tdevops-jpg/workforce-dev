@@ -3,12 +3,7 @@ UI tests: login page branding, dashboard render, navigation links,
 and package security regressions.
 """
 
-import io
-import json
-import zipfile
-
 import pytest
-
 
 # ---------------------------------------------------------------------------
 # Isolated client fixture for login-page tests
@@ -113,8 +108,11 @@ def test_login_valid_credentials_redirects_to_dashboard(ui_client):
 
 
 def test_dashboard_renders_when_anonymous(client):
+    with client.session_transaction() as sess:
+        sess.clear()
     response = client.get("/")
-    assert response.status_code == 200
+    assert response.status_code == 302
+    assert "/login" in response.headers["Location"]
 
 
 def test_dashboard_renders_after_login(client, admin_user):
@@ -152,32 +150,50 @@ def test_dashboard_quick_action_buttons_for_authed_user(client, admin_user):
 # ---------------------------------------------------------------------------
 
 
-def test_nav_dashboard_link(client):
+def test_nav_dashboard_link(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/")
     assert b"Dashboard" in response.data
 
 
-def test_nav_projects_link(client):
+def test_nav_projects_link(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/")
     assert b"/projects" in response.data
 
 
-def test_nav_docs_link(client):
+def test_nav_docs_link(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/")
     assert b"/docs" in response.data
 
 
-def test_nav_progress_link(client):
+def test_nav_progress_link(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/")
     assert b"/progress" in response.data
 
 
-def test_nav_scripts_link(client):
+def test_nav_scripts_link(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/")
     assert b"/scripts" in response.data
 
 
-def test_nav_packages_link(client):
+def test_nav_packages_link(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/")
     assert b"/packages" in response.data
 
