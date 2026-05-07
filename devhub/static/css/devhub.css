@@ -1,76 +1,130 @@
-/* Workforce Dev Hub - Custom Styles */
+/* Workforce Dev Hub - UI tokens and layout */
+:root {
+    --devhub-bg: #f3f6fb;
+    --devhub-surface: #ffffff;
+    --devhub-text: #1f2937;
+    --devhub-muted: #64748b;
+    --devhub-border: #dbe2ee;
+    --devhub-brand: #2a5bd7;
+    --devhub-brand-dark: #234bb2;
+}
 
-body {
-    background-color: #f8f9fa;
+body.devhub-body {
+    background: var(--devhub-bg);
+    color: var(--devhub-text);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-main {
-    flex: 1;
+.topbar,
+.footer,
+.card,
+.offcanvas,
+.sidebar {
+    background: var(--devhub-surface);
 }
 
-.navbar-brand {
-    font-size: 1.1rem;
-    letter-spacing: 0.02em;
+.app-shell-body {
+    min-height: calc(100vh - 59px);
 }
 
-.footer {
-    font-size: 0.85rem;
-    margin-top: auto;
+.sidebar {
+    width: 250px;
+    position: sticky;
+    top: 0;
+    height: calc(100vh - 59px);
 }
 
-/* Card hover effect */
+.sidebar .nav-link {
+    border-radius: 0.5rem;
+    color: var(--devhub-text);
+    padding: 0.55rem 0.75rem;
+}
+
+.sidebar .nav-link:hover {
+    background: #eff3fa;
+}
+
+.sidebar .nav-link.active {
+    background: #e8eeff;
+    color: var(--devhub-brand-dark);
+    font-weight: 600;
+}
+
+.app-content {
+    max-width: 1400px;
+}
+
+.flash-stack .alert {
+    border: 0;
+}
+
+.stat-card .display-6 {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.health-card {
+    border: 1px solid var(--devhub-border);
+    border-radius: 0.75rem;
+    padding: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .card {
-    transition: box-shadow 0.15s ease-in-out;
+    border: 1px solid var(--devhub-border);
+    border-radius: 0.8rem;
 }
 
 .card:hover {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 0.35rem 1rem rgba(16, 24, 40, 0.08) !important;
 }
 
-/* Monospace code blocks */
+.table-sm td,
+.table-sm th {
+    padding: 0.35rem 0.5rem;
+}
+
+.btn-primary {
+    background-color: var(--devhub-brand);
+    border-color: var(--devhub-brand);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--devhub-brand-dark);
+    border-color: var(--devhub-brand-dark);
+}
+
+.brand-mark {
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 1.35rem;
+    background: linear-gradient(135deg, var(--devhub-brand), #4d7ff8);
+}
+
+.login-body .auth-shell {
+    background: radial-gradient(circle at top right, #e7edff, #f6f9ff 45%, #f8fafc 80%);
+}
+
 pre {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
     padding: 0.75rem 1rem;
     font-size: 0.875em;
     overflow-x: auto;
 }
 
-/* Status badge colours */
-.badge-status-active { background-color: #198754; }
-.badge-status-paused { background-color: #ffc107; color: #212529; }
-.badge-status-archived { background-color: #6c757d; }
-
-/* Risk level colours */
-.risk-safe { color: #198754; }
-.risk-moderate { color: #fd7e14; }
-.risk-dangerous { color: #dc3545; }
-
-/* Tight tables */
-.table-sm td, .table-sm th {
-    padding: 0.35rem 0.5rem;
-}
-
-/* Nav active link */
-.navbar-nav .nav-link.active,
-.navbar-nav .nav-link:hover {
-    color: #fff !important;
-}
-
-/* Form labels */
-.form-label.fw-semibold {
-    font-size: 0.9rem;
-}
-
-/* Progress timeline indicator */
-.entry-status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 6px;
+@media (max-width: 991px) {
+    .app-content {
+        max-width: 100%;
+    }
 }

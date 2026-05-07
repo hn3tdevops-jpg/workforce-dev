@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request
 
-from devhub.models import Document, Package, ProgressEntry, Project, TrackedFile
+from devhub.models import Document, Package, ProgressEntry, Project, Script, TrackedFile
 from devhub.search import search_all
 
 bp = Blueprint("main", __name__)
@@ -8,18 +8,40 @@ bp = Blueprint("main", __name__)
 
 @bp.route("/")
 def index():
-    projects = Project.query.filter_by(status="active").all()
+    all_projects = Project.query.order_by(Project.name).all()
+    projects = [project for project in all_projects if project.status == "active"]
+    project_slug_set = {project.slug for project in all_projects}
+    project_name_set = {project.name.lower() for project in all_projects}
     recent_progress = ProgressEntry.query.order_by(ProgressEntry.entry_date.desc()).limit(5).all()
     recent_docs = Document.query.order_by(Document.updated_at.desc()).limit(5).all()
     recent_files = TrackedFile.query.order_by(TrackedFile.last_modified.desc()).limit(5).all()
     recent_packages = Package.query.order_by(Package.uploaded_at.desc()).limit(5).all()
+    recent_scripts = Script.query.order_by(Script.created_at.desc()).limit(5).all()
+    stats = {
+        "projects": Project.query.count(),
+        "docs": Document.query.count(),
+        "progress": ProgressEntry.query.count(),
+        "scripts": Script.query.count(),
+        "packages": Package.query.count(),
+        "files": TrackedFile.query.count(),
+    }
+    health = {
+        "workforce_api": "workforce-api" in project_slug_set or "workforce api" in project_name_set,
+        "frontend_console": "frontend-console" in project_slug_set
+        or "frontend console" in project_name_set,
+        "dev_hub": "workforce-devhub" in project_slug_set or "dev hub" in project_name_set,
+    }
     return render_template(
         "index.html",
         projects=projects,
+        all_projects=all_projects,
+        health=health,
+        stats=stats,
         recent_progress=recent_progress,
         recent_docs=recent_docs,
         recent_files=recent_files,
         recent_packages=recent_packages,
+        recent_scripts=recent_scripts,
     )
 
 
