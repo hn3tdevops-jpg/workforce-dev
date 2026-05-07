@@ -139,6 +139,9 @@ def approve(pkg_id):
 @login_required
 def install(pkg_id):
     pkg = Package.query.get_or_404(pkg_id)
+    if not current_user.is_admin:
+        flash("Admin access required.", "danger")
+        return redirect(url_for("packages.view", pkg_id=pkg_id))
     if not current_app.config.get("ENABLE_PACKAGE_INSTALL", False):
         flash(
             "Package install is disabled. Set DEVHUB_ENABLE_PACKAGE_INSTALL=true to enable.",

@@ -122,8 +122,8 @@ def validate_package(zip_path, workspace_roots=None):
                     sentinel = Path("/safe_root")
                     try:
                         resolved = (sentinel / path).resolve()
-                        os.path.commonpath([str(resolved), str(sentinel)])
-                        if not str(resolved).startswith(str(sentinel)):
+                        common = os.path.commonpath([str(resolved), str(sentinel)])
+                        if common != str(sentinel):
                             return {
                                 "valid": False,
                                 "error": f"Path traversal in intended_paths: {path}",

@@ -1,6 +1,7 @@
 import json
 import os
 import tempfile
+import uuid
 import zipfile
 
 from devhub.package_validator import _is_within_root, validate_package
@@ -182,6 +183,15 @@ def test_relative_path_normalisation_no_roots():
         assert result["valid"] is True
 
 
+def test_relative_sibling_prefix_escape_no_roots():
+    """Sibling-prefix escape should be rejected when no workspace roots are configured."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        zip_path = make_valid_package(tmpdir, {"intended_paths": ["../safe_root_evil/file.py"]})
+        result = validate_package(zip_path)
+        assert result["valid"] is False
+        assert "Path traversal in intended_paths" in result["error"]
+
+
 # ---------------------------------------------------------------------------
 # Quarantine uniqueness tests (Fix 4)
 # ---------------------------------------------------------------------------
@@ -244,3 +254,93 @@ def test_quarantine_unique_dirs(app, client, admin_user):
         # Each file must be in its own subdirectory
         dirs = [os.path.dirname(p) for p in paths]
         assert len(set(dirs)) == len(dirs), "Uploads share a quarantine directory"
+
+
+# ---------------------------------------------------------------------------
+# Package auth policy tests (Fix 1)
+# ---------------------------------------------------------------------------
+
+
+def _create_test_user(app, db, *, is_admin=False):
+    with app.app_context():
+        from devhub.models import User
+
+        user = User(email=f"user-{uuid.uuid4().hex}@example.com", is_admin=is_admin)
+        user.set_password("testpass123")
+        db.session.add(user)
+        db.session.commit()
+        return user.id
+
+
+def _create_test_package(app, db, *, status="approved", manifest_valid=True):
+    with app.app_context():
+        from devhub.models import Package
+
+        pkg = Package(
+            filename=f"pkg-{uuid.uuid4().hex}.zip",
+            quarantine_path=f"quarantine/{uuid.uuid4().hex}/pkg.zip",
+            manifest_valid=manifest_valid,
+            status=status,
+            risk_level="safe",
+            requires_manual_review=False,
+        )
+        db.session.add(pkg)
+        db.session.commit()
+        return pkg.id
+
+
+def test_non_admin_cannot_trigger_install_and_button_hidden(app, client, db):
+    user_id = _create_test_user(app, db, is_admin=False)
+    pkg_id = _create_test_package(app, db, status="approved", manifest_valid=True)
+    original = app.config["ENABLE_PACKAGE_INSTALL"]
+    app.config["ENABLE_PACKAGE_INSTALL"] = True
+    try:
+        with client.session_transaction() as sess:
+            sess["_user_id"] = str(user_id)
+            sess["_fresh"] = True
+
+        response = client.post(f"/packages/{pkg_id}/install", follow_redirects=True)
+        assert response.status_code == 200
+        assert b"Admin access required." in response.data
+
+        page = client.get(f"/packages/{pkg_id}")
+        assert page.status_code == 200
+        assert b"> Install<" not in page.data
+    finally:
+        app.config["ENABLE_PACKAGE_INSTALL"] = original
+
+
+def test_admin_can_reach_install_route_when_enabled_and_approved(app, client, admin_user, db):
+    pkg_id = _create_test_package(app, db, status="approved", manifest_valid=True)
+    original = app.config["ENABLE_PACKAGE_INSTALL"]
+    app.config["ENABLE_PACKAGE_INSTALL"] = True
+    try:
+        with client.session_transaction() as sess:
+            sess["_user_id"] = str(admin_user.id)
+            sess["_fresh"] = True
+
+        response = client.post(f"/packages/{pkg_id}/install", follow_redirects=True)
+        assert response.status_code == 200
+        assert b"Install is disabled in this version. Review the install plan manually." in response.data
+    finally:
+        app.config["ENABLE_PACKAGE_INSTALL"] = original
+
+
+def test_package_approval_remains_admin_only(app, client, db):
+    user_id = _create_test_user(app, db, is_admin=False)
+    pkg_id = _create_test_package(app, db, status="quarantined", manifest_valid=True)
+
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(user_id)
+        sess["_fresh"] = True
+
+    response = client.post(f"/packages/{pkg_id}/approve", follow_redirects=True)
+    assert response.status_code == 200
+    assert b"Admin access required." in response.data
+
+    with app.app_context():
+        from devhub.models import Package
+
+        pkg = Package.query.get(pkg_id)
+        assert pkg is not None
+        assert pkg.status == "quarantined"
