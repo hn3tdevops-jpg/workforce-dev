@@ -169,6 +169,28 @@ def test_dashboard_contains_stats_section(client, admin_user):
     assert b"Packages" in response.data
 
 
+def test_dashboard_template_dashboard_classes_are_styled():
+    template = Path(__file__).resolve().parents[1] / "devhub" / "templates" / "index.html"
+    template_text = template.read_text(encoding="utf-8")
+    css = Path(__file__).resolve().parents[1] / "devhub" / "static" / "css" / "devhub.css"
+    css_text = css.read_text(encoding="utf-8")
+
+    dashboard_classes = [
+        "dh-stat-card",
+        "dh-stat-icon",
+        "dh-stat-value",
+        "dh-stat-label",
+        "dh-section-heading",
+        "dh-empty-state",
+        "dh-empty-icon",
+        "dh-empty-list-item",
+        "dh-card-header",
+    ]
+    for class_name in dashboard_classes:
+        assert class_name in template_text
+        assert f".{class_name}" in css_text
+
+
 def test_dashboard_quick_action_buttons_for_authed_user(client, admin_user):
     with client.session_transaction() as sess:
         sess["_user_id"] = str(admin_user.id)

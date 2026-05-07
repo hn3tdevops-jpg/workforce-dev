@@ -87,6 +87,59 @@ body.devhub-body {
     font-weight: 700;
 }
 
+.dh-stat-card {
+    border: 1px solid var(--devhub-border);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dh-stat-card:hover {
+    transform: translateY(-1px);
+}
+
+.dh-stat-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.35rem;
+}
+
+.dh-stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.dh-stat-label {
+    color: var(--devhub-muted);
+    font-size: 0.9rem;
+}
+
+.dh-section-heading {
+    color: var(--devhub-text);
+    font-weight: 600;
+}
+
+.dh-empty-state {
+    border: 1px dashed var(--devhub-border);
+    border-radius: 0.8rem;
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--devhub-muted);
+}
+
+.dh-empty-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.dh-empty-list-item {
+    color: var(--devhub-muted);
+}
+
+.dh-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .health-card {
     border: 1px solid var(--devhub-border);
     border-radius: 0.75rem;
