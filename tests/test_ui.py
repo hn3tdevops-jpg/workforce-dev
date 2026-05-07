@@ -358,8 +358,9 @@ def test_package_copy_button_uses_data_copy_attribute(app, client, db):
     with app.app_context():
         from devhub.models import Package
 
+        filename = f"copy-test-{uuid.uuid4().hex}.zip"
         pkg = Package(
-            filename=f"copy-test-{uuid.uuid4().hex}.zip",
+            filename=filename,
             quarantine_path=f"quarantine/copy/{uuid.uuid4().hex}.zip",
             manifest_valid=True,
             status="approved",
@@ -372,7 +373,7 @@ def test_package_copy_button_uses_data_copy_attribute(app, client, db):
 
     page = client.get(f"/packages/{pkg_id}")
     assert page.status_code == 200
-    assert b'data-copy="' in page.data
+    assert f'data-copy="{filename}"'.encode() in page.data
     assert b"data-copy-target" not in page.data
 
 
@@ -394,5 +395,6 @@ def test_script_copy_buttons_use_data_copy_attribute(app, client, db):
 
     page = client.get(f"/scripts/{script_id}")
     assert page.status_code == 200
-    assert page.data.count(b'data-copy="') >= 2
+    assert b'data-copy="echo dry"' in page.data
+    assert b'data-copy="echo run"' in page.data
     assert b"data-copy-target" not in page.data
