@@ -9,6 +9,7 @@
     --devhub-brand-dark: #234bb2;
 }
 
+body,
 body.devhub-body {
     background: var(--devhub-bg);
     color: var(--devhub-text);
@@ -17,12 +18,33 @@ body.devhub-body {
     flex-direction: column;
 }
 
+.dh-topbar,
 .topbar,
+.dh-footer,
 .footer,
 .card,
 .offcanvas,
+.dh-sidebar,
 .sidebar {
     background: var(--devhub-surface);
+}
+
+.dh-topbar {
+    background: linear-gradient(90deg, var(--devhub-brand-dark), var(--devhub-brand));
+}
+
+.dh-footer {
+    border-top: 1px solid var(--devhub-border);
+    margin-top: auto;
+}
+
+.dh-footer-link {
+    color: var(--devhub-brand-dark);
+    text-decoration: none;
+}
+
+.dh-footer-link:hover {
+    text-decoration: underline;
 }
 
 .app-shell-body {
@@ -110,8 +132,38 @@ body.devhub-body {
     background: linear-gradient(135deg, var(--devhub-brand), #4d7ff8);
 }
 
+.dh-login-body,
 .login-body .auth-shell {
     background: radial-gradient(circle at top right, #e7edff, #f6f9ff 45%, #f8fafc 80%);
+}
+
+.dh-login-body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.dh-login-wrap {
+    width: min(100%, 520px);
+}
+
+.dh-login-card {
+    border: 1px solid var(--devhub-border);
+    border-radius: 0.9rem;
+}
+
+.dh-login-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    margin: 0 auto;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 1.45rem;
+    background: linear-gradient(135deg, var(--devhub-brand), #4d7ff8);
 }
 
 pre {

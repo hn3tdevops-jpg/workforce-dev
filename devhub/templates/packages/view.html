@@ -40,7 +40,7 @@
                 <li class="list-group-item">
                     <small class="text-muted">Filename</small><br>
                     <code id="pkg-filename">{{ pkg.filename }}</code>
-                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-copy-target="#pkg-filename">Copy</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-copy="{{ pkg.filename }}">Copy</button>
                 </li>
                 {% if pkg.version %}<li class="list-group-item"><small class="text-muted">Version</small><br>{{ pkg.version }}</li>{% endif %}
                 {% if pkg.package_key %}<li class="list-group-item"><small class="text-muted">Package Key</small><br><code>{{ pkg.package_key }}</code></li>{% endif %}
