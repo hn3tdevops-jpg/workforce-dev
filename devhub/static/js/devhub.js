@@ -30,8 +30,8 @@
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll("form:not([data-no-loading])").forEach(function (form) {
             form.addEventListener("submit", function (e) {
-                // If the submission was already cancelled (e.g. by a data-confirm dialog),
-                // do not enter loading state.
+                // If the submission was already cancelled (e.g. by the data-confirm
+                // handler registered above), do not enter loading state.
                 if (e.defaultPrevented) return;
                 const btn = form.querySelector("[type=submit]");
                 if (!btn || btn.disabled) return;
