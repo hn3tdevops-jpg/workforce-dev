@@ -46,6 +46,7 @@
                 const selector = button.getAttribute("data-copy-target");
                 const source = selector ? document.querySelector(selector) : null;
                 if (!source) return;
+                if (!navigator.clipboard || !navigator.clipboard.writeText) return;
                 const value = source.textContent || source.value || "";
                 try {
                     await navigator.clipboard.writeText(value.trim());
@@ -73,9 +74,7 @@
                 input.value = "";
                 input.form.submit();
             });
-            const submitButton = input.form.querySelector(
-                ".btn-outline-primary, .btn-primary, button[type='submit']"
-            );
+            const submitButton = input.form.querySelector("button[type='submit']");
             if (submitButton) {
                 submitButton.after(clear);
             } else {
