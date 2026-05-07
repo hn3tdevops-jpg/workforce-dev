@@ -14,9 +14,11 @@
     <td>
       {% if u.id != current_user.id %}
       <form method="POST" action="{{ url_for('admin.toggle_admin', id=u.id) }}" class="d-inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-sm btn-outline-secondary">Toggle Admin</button>
       </form>
       <form method="POST" action="{{ url_for('admin.deactivate', id=u.id) }}" class="d-inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-sm btn-danger">Deactivate</button>
       </form>
       {% endif %}

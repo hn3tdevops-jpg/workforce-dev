@@ -37,8 +37,73 @@ def test_scan_directory_skips_hidden(tmp_path):
     assert '.hidden' not in filenames
     assert 'visible.txt' in filenames
 
+def test_scan_excludes_default_dirs(tmp_path):
+    venv_dir = tmp_path / 'venv'
+    venv_dir.mkdir()
+    (venv_dir / 'lib.py').write_text('lib')
+    node_dir = tmp_path / 'node_modules'
+    node_dir.mkdir()
+    (node_dir / 'pkg.js').write_text('pkg')
+    (tmp_path / 'app.py').write_text('app')
+    scanner = FileScanner()
+    records = scanner.scan_directory(str(tmp_path))
+    filenames = [r['filename'] for r in records]
+    assert 'lib.py' not in filenames
+    assert 'pkg.js' not in filenames
+    assert 'app.py' in filenames
+
+def test_scan_excludes_db_files(tmp_path):
+    (tmp_path / 'data.db').write_bytes(b'db')
+    (tmp_path / 'store.sqlite').write_bytes(b'sq')
+    (tmp_path / 'notes.txt').write_text('notes')
+    scanner = FileScanner()
+    records = scanner.scan_directory(str(tmp_path))
+    filenames = [r['filename'] for r in records]
+    assert 'data.db' not in filenames
+    assert 'store.sqlite' not in filenames
+    assert 'notes.txt' in filenames
+
+def test_scan_excludes_dotenv_file(tmp_path):
+    env_file = tmp_path / '.env'
+    env_file.write_text('SECRET=value')
+    (tmp_path / 'readme.txt').write_text('readme')
+    scanner = FileScanner()
+    records = scanner.scan_directory(str(tmp_path))
+    filenames = [r['filename'] for r in records]
+    assert '.env' not in filenames
+    assert 'readme.txt' in filenames
+
+def test_scan_custom_exclude_dirs(tmp_path):
+    special_dir = tmp_path / 'special'
+    special_dir.mkdir()
+    (special_dir / 'file.txt').write_text('x')
+    (tmp_path / 'other.txt').write_text('y')
+    scanner = FileScanner()
+    records = scanner.scan_directory(str(tmp_path), exclude_dirs={'special'})
+    filenames = [r['filename'] for r in records]
+    assert 'file.txt' not in filenames
+    assert 'other.txt' in filenames
+
+def test_scan_custom_exclude_extensions(tmp_path):
+    (tmp_path / 'report.log').write_text('log')
+    (tmp_path / 'app.py').write_text('code')
+    scanner = FileScanner()
+    records = scanner.scan_directory(str(tmp_path), exclude_extensions={'.log'})
+    filenames = [r['filename'] for r in records]
+    assert 'report.log' not in filenames
+    assert 'app.py' in filenames
+
+def test_scan_custom_exclude_filenames(tmp_path):
+    (tmp_path / 'secrets.conf').write_text('secret')
+    (tmp_path / 'config.yml').write_text('cfg')
+    scanner = FileScanner()
+    records = scanner.scan_directory(str(tmp_path), exclude_filenames={'secrets.conf'})
+    filenames = [r['filename'] for r in records]
+    assert 'secrets.conf' not in filenames
+    assert 'config.yml' in filenames
+
+
 def test_update_database(app, db, tmp_path):
-    with app.app_context():
         f = tmp_path / 'scan.txt'
         f.write_text('data')
         scanner = FileScanner()

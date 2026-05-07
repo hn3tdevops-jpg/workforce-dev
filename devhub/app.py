@@ -1,7 +1,7 @@
 import os
 from flask import Flask
 from devhub.config import config
-from devhub.extensions import db, migrate, login_manager, bcrypt
+from devhub.extensions import db, migrate, login_manager, bcrypt, csrf
 from devhub.models import User
 
 def create_app(config_name=None):
@@ -11,12 +11,17 @@ def create_app(config_name=None):
             config_name = 'default'
 
     app = Flask(__name__, template_folder='templates', static_folder='static')
-    app.config.from_object(config[config_name])
+    cfg_class = config[config_name]
+    app.config.from_object(cfg_class)
+
+    if hasattr(cfg_class, 'init_app'):
+        cfg_class.init_app(app)
 
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
     bcrypt.init_app(app)
+    csrf.init_app(app)
 
     @login_manager.user_loader
     def load_user(user_id):

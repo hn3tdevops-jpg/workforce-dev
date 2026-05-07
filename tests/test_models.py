@@ -1,6 +1,7 @@
 import pytest
 from devhub.models import User, Project, Doc, ProgressReport, Script, Package, FileRecord, AuditLog
 from devhub.extensions import bcrypt
+from devhub.app import create_app
 
 def test_user_creation(db):
     hashed = bcrypt.generate_password_hash('pass').decode('utf-8')
@@ -56,3 +57,22 @@ def test_user_relationships(db, admin_user):
     db.session.add(p)
     db.session.commit()
     assert len(admin_user.projects) == 1
+
+def test_production_config_rejects_default_secret_key():
+    import os
+    env_backup = os.environ.pop('SECRET_KEY', None)
+    try:
+        with pytest.raises(RuntimeError, match='SECRET_KEY'):
+            create_app('production')
+    finally:
+        if env_backup is not None:
+            os.environ['SECRET_KEY'] = env_backup
+
+def test_production_config_accepts_custom_secret_key():
+    import os
+    os.environ['SECRET_KEY'] = 'a-strong-random-production-secret'
+    try:
+        app = create_app('production')
+        assert app is not None
+    finally:
+        del os.environ['SECRET_KEY']

@@ -3,6 +3,7 @@ Flask-SQLAlchemy>=3.0
 Flask-Migrate>=4.0
 Flask-Login>=0.6
 Flask-Bcrypt>=1.0
+Flask-WTF>=1.2
 python-dotenv>=1.0
 Werkzeug>=3.0
 pytest>=7.0

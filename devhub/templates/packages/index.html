@@ -18,6 +18,7 @@
     {% endif %}
     {% if current_user.is_admin %}
     <form method="POST" action="{{ url_for('packages.validate', id=pkg.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-sm btn-info">Re-validate</button>
     </form>
     {% endif %}

@@ -5,6 +5,14 @@ from devhub.extensions import db
 from devhub.models import FileRecord
 
 class FileScanner:
+    DEFAULT_EXCLUDE_DIRS = {
+        'venv', 'env', '.venv', '.env', 'node_modules', '__pycache__',
+        'dist', 'build', '.git', '.tox', '.mypy_cache', '.pytest_cache',
+        'uploads', 'migrations',
+    }
+    DEFAULT_EXCLUDE_EXTENSIONS = {'.db', '.sqlite', '.sqlite3', '.pyc'}
+    DEFAULT_EXCLUDE_FILENAMES = {'.env'}
+
     def compute_hash(self, filepath):
         h = hashlib.sha256()
         try:
@@ -15,12 +23,28 @@ class FileScanner:
         except (OSError, IOError):
             return None
 
-    def scan_directory(self, path):
+    def scan_directory(self, path, exclude_dirs=None, exclude_extensions=None,
+                       exclude_filenames=None):
+        if exclude_dirs is None:
+            exclude_dirs = self.DEFAULT_EXCLUDE_DIRS
+        if exclude_extensions is None:
+            exclude_extensions = self.DEFAULT_EXCLUDE_EXTENSIONS
+        if exclude_filenames is None:
+            exclude_filenames = self.DEFAULT_EXCLUDE_FILENAMES
+
         records = []
         for root, dirs, files in os.walk(path):
-            dirs[:] = [d for d in dirs if not d.startswith('.')]
+            dirs[:] = [
+                d for d in dirs
+                if not d.startswith('.') and d not in exclude_dirs
+            ]
             for fname in files:
                 if fname.startswith('.'):
+                    continue
+                if fname in exclude_filenames:
+                    continue
+                _, ext = os.path.splitext(fname)
+                if ext in exclude_extensions:
                     continue
                 fpath = os.path.join(root, fname)
                 try:
