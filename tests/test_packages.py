@@ -365,3 +365,20 @@ def test_package_approval_remains_admin_only(app, client, db):
         pkg = Package.query.get(pkg_id)
         assert pkg is not None
         assert pkg.status == "quarantined"
+
+
+def test_non_admin_approval_does_not_reveal_package_existence(app, client, db):
+    user_id = _create_test_user(app, db, is_admin=False)
+    pkg_id = _create_test_package(app, db, status="quarantined", manifest_valid=True)
+
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(user_id)
+        sess["_fresh"] = True
+
+    existing = client.post(f"/packages/{pkg_id}/approve", follow_redirects=True)
+    missing = client.post("/packages/999999/approve", follow_redirects=True)
+
+    assert existing.status_code == 200
+    assert missing.status_code == 200
+    assert b"Admin access required." in existing.data
+    assert b"Admin access required." in missing.data

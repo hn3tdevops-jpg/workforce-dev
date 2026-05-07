@@ -113,10 +113,10 @@ def upload():
 @bp.route("/<int:pkg_id>/approve", methods=["POST"])
 @login_required
 def approve(pkg_id):
-    pkg = Package.query.get_or_404(pkg_id)
     if not current_user.is_admin:
         flash("Admin access required.", "danger")
-        return redirect(url_for("packages.view", pkg_id=pkg_id))
+        return redirect(url_for("packages.index"))
+    pkg = Package.query.get_or_404(pkg_id)
     if not pkg.manifest_valid:
         flash("Cannot approve a package with invalid manifest.", "danger")
         return redirect(url_for("packages.view", pkg_id=pkg_id))
