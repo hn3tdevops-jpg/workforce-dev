@@ -28,7 +28,7 @@ def login():
             return redirect(url_for("auth.login"))
         login_user(user, remember=form.remember_me.data)
         return redirect(url_for("main.index"))
-    return render_template("login.html", form=form)
+    return render_template("login.html", form=form, standalone_login=True)
 
 
 @bp.route("/logout")

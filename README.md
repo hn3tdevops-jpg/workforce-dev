@@ -14,6 +14,14 @@ A GitHub-first, PythonAnywhere-ready internal developer hub for the Workforce pr
 - **Admin Panel** — User management, settings, audit log
 - **JSON API** — REST endpoints for all resource types
 
+## UI Overview
+
+- Bootstrap 5 + Jinja app shell with responsive topbar, sidebar/offcanvas navigation, and reusable page-header components.
+- Standalone branded `/login` experience with keyboard-friendly controls, CSRF-safe Flask-WTF form handling, and submit loading states.
+- Interactive dashboard cards for docs, packages, progress, scripts, tracked files, and project health.
+- Lightweight vanilla JS enhancements (form loading states, copy-to-clipboard, safe confirm dialogs, search clear button) with no npm/Vite/React build pipeline.
+- PythonAnywhere-friendly server-rendered architecture remains unchanged.
+
 ## Quick Start
 
 ```bash
@@ -34,6 +42,17 @@ Open http://localhost:5000. Create an admin user with `FLASK_APP=wsgi.py flask c
 ```bash
 pytest tests/ -v
 ```
+
+```bash
+ruff check devhub/
+```
+
+For UI-focused verification:
+
+1. Log in at `/login` (admin + non-admin accounts).
+2. Validate responsive navigation (desktop sidebar + mobile offcanvas).
+3. Confirm package approve/install controls remain admin-gated and feature-flag controlled.
+4. Run the full test and lint commands above before merge.
 
 ## Tech Stack
 
