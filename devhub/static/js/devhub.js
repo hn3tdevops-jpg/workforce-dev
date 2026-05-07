@@ -1,6 +1,8 @@
 /* Workforce Dev Hub - Vanilla JS */
 (function () {
     "use strict";
+    const ALERT_DISMISS_DELAY_MS = 6000;
+    const COPY_FEEDBACK_DURATION_MS = 1200;
 
     document.addEventListener("DOMContentLoaded", function () {
         const alerts = document.querySelectorAll(".alert.alert-dismissible");
@@ -8,7 +10,7 @@
             setTimeout(function () {
                 const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
                 if (bsAlert) bsAlert.close();
-            }, 6000);
+            }, ALERT_DISMISS_DELAY_MS);
         });
     });
 
@@ -51,7 +53,7 @@
                     button.textContent = "Copied";
                     setTimeout(function () {
                         button.textContent = button.dataset.originalLabel || "Copy";
-                    }, 1200);
+                    }, COPY_FEEDBACK_DURATION_MS);
                 } catch (err) {
                     console.error("Copy failed", err);
                 }
