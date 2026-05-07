@@ -73,7 +73,14 @@
                 input.value = "";
                 input.form.submit();
             });
-            input.form.querySelector(".btn-outline-primary, .btn-primary, button[type='submit']")?.after(clear);
+            const submitButton = input.form.querySelector(
+                ".btn-outline-primary, .btn-primary, button[type='submit']"
+            );
+            if (submitButton) {
+                submitButton.after(clear);
+            } else {
+                input.insertAdjacentElement("afterend", clear);
+            }
         });
     });
 

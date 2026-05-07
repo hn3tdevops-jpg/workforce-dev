@@ -11,6 +11,11 @@
 <a href="{{ url_for('main.files') }}" class="btn btn-outline-secondary"><i class="bi bi-folder2-open"></i> Review tracked files</a>
 {% endset %}
 {{ page_header("Dashboard", "Visual overview of Workforce project docs, packages, scripts, and progress.", actions) }}
+{% set project_keys = all_projects | map(attribute='slug') | list %}
+{% set project_names = all_projects | map(attribute='name') | map('lower') | list %}
+{% set has_workforce_api = 'workforce-api' in project_keys or 'workforce api' in project_names %}
+{% set has_frontend_console = 'frontend-console' in project_keys or 'frontend console' in project_names %}
+{% set has_dev_hub = 'workforce-devhub' in project_keys or 'dev hub' in project_names %}
 
 <div class="row g-3 mb-4">
     <div class="col-6 col-xl-2">
@@ -39,9 +44,9 @@
             <div class="card-header"><strong>Project health</strong></div>
             <div class="card-body">
                 <div class="row row-cols-1 row-cols-md-2 g-3">
-                    <div class="col"><div class="health-card"><h2 class="h6">Workforce API</h2><span class="badge bg-{% if stats.projects > 0 %}success{% else %}secondary{% endif %}">{% if stats.projects > 0 %}Tracked{% else %}Not tracked{% endif %}</span></div></div>
-                    <div class="col"><div class="health-card"><h2 class="h6">Frontend Console</h2><span class="badge bg-{% if stats.projects > 1 %}success{% else %}secondary{% endif %}">{% if stats.projects > 1 %}Tracked{% else %}Pending{% endif %}</span></div></div>
-                    <div class="col"><div class="health-card"><h2 class="h6">Dev Hub</h2><span class="badge bg-{% if stats.progress > 0 %}success{% else %}warning text-dark{% endif %}">{% if stats.progress > 0 %}Active updates{% else %}Needs updates{% endif %}</span></div></div>
+                    <div class="col"><div class="health-card"><h2 class="h6">Workforce API</h2><span class="badge bg-{% if has_workforce_api %}success{% else %}secondary{% endif %}">{% if has_workforce_api %}Tracked{% else %}Not tracked{% endif %}</span></div></div>
+                    <div class="col"><div class="health-card"><h2 class="h6">Frontend Console</h2><span class="badge bg-{% if has_frontend_console %}success{% else %}secondary{% endif %}">{% if has_frontend_console %}Tracked{% else %}Not tracked{% endif %}</span></div></div>
+                    <div class="col"><div class="health-card"><h2 class="h6">Dev Hub</h2><span class="badge bg-{% if has_dev_hub and stats.progress > 0 %}success{% elif has_dev_hub %}warning text-dark{% else %}secondary{% endif %}">{% if has_dev_hub and stats.progress > 0 %}Active updates{% elif has_dev_hub %}Needs updates{% else %}Not tracked{% endif %}</span></div></div>
                     <div class="col"><div class="health-card"><h2 class="h6">Deployment/PythonAnywhere</h2><span class="badge bg-{% if stats.files > 0 %}primary{% else %}secondary{% endif %}">{% if stats.files > 0 %}Tracked files available{% else %}No scan data{% endif %}</span></div></div>
                     <div class="col"><div class="health-card"><h2 class="h6">Packages</h2><span class="badge bg-{% if stats.packages > 0 %}warning text-dark{% else %}secondary{% endif %}">{% if stats.packages > 0 %}Review queue{% else %}No uploads{% endif %}</span></div></div>
                     <div class="col"><div class="health-card"><h2 class="h6">Documentation</h2><span class="badge bg-{% if stats.docs > 0 %}success{% else %}secondary{% endif %}">{% if stats.docs > 0 %}Populated{% else %}Empty{% endif %}</span></div></div>

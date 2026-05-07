@@ -8,7 +8,8 @@ bp = Blueprint("main", __name__)
 
 @bp.route("/")
 def index():
-    projects = Project.query.filter_by(status="active").all()
+    all_projects = Project.query.order_by(Project.name).all()
+    projects = [project for project in all_projects if project.status == "active"]
     recent_progress = ProgressEntry.query.order_by(ProgressEntry.entry_date.desc()).limit(5).all()
     recent_docs = Document.query.order_by(Document.updated_at.desc()).limit(5).all()
     recent_files = TrackedFile.query.order_by(TrackedFile.last_modified.desc()).limit(5).all()
@@ -25,6 +26,7 @@ def index():
     return render_template(
         "index.html",
         projects=projects,
+        all_projects=all_projects,
         stats=stats,
         recent_progress=recent_progress,
         recent_docs=recent_docs,
