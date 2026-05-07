@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.title }} — Progress{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('progress.index') }}">Progress</a></li>
+                <li class="breadcrumb-item active">{{ entry.title }}</li>
+            </ol>
+        </nav>
+        <h2>{{ entry.title }}</h2>
+        <div class="d-flex gap-2 flex-wrap mb-2">
+            <span class="badge bg-{% if entry.status == 'completed' %}success{% elif entry.status == 'blocked' %}danger{% elif entry.status == 'in-progress' %}primary{% else %}secondary{% endif %}">{{ entry.status }}</span>
+            {% if entry.project %}<a href="{{ url_for('projects.view', slug=entry.project.slug) }}" class="badge bg-info text-dark text-decoration-none">{{ entry.project.name }}</a>{% endif %}
+            {% for tag in entry.tags %}<span class="badge bg-light text-dark border">{{ tag.name }}</span>{% endfor %}
+        </div>
+    </div>
+    <div class="col-auto">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('progress.edit', entry_id=entry.id) }}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i> Edit</a>
+        <form method="post" action="{{ url_for('progress.delete', entry_id=entry.id) }}" class="d-inline" onsubmit="return confirm('Delete this entry?')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i></button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        {% if entry.description %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header"><strong><i class="bi bi-text-paragraph"></i> Description</strong></div>
+            <div class="card-body"><pre style="white-space: pre-wrap; font-family: inherit; margin:0;">{{ entry.description }}</pre></div>
+        </div>
+        {% endif %}
+
+        {% if entry.commands_run %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header"><strong><i class="bi bi-terminal"></i> Commands Run</strong></div>
+            <div class="card-body"><pre class="mb-0 text-break">{{ entry.commands_run }}</pre></div>
+        </div>
+        {% endif %}
+
+        {% if entry.test_results %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header"><strong><i class="bi bi-check2-circle"></i> Test Results</strong></div>
+            <div class="card-body"><pre class="mb-0 text-break">{{ entry.test_results }}</pre></div>
+        </div>
+        {% endif %}
+
+        {% if entry.notes %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header"><strong><i class="bi bi-sticky"></i> Notes</strong></div>
+            <div class="card-body"><pre style="white-space: pre-wrap; font-family: inherit; margin:0;">{{ entry.notes }}</pre></div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header"><strong>Details</strong></div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><small class="text-muted">Date</small><br>{{ entry.entry_date.strftime('%Y-%m-%d %H:%M') if entry.entry_date else '—' }}</li>
+                <li class="list-group-item"><small class="text-muted">Created</small><br>{{ entry.created_at.strftime('%Y-%m-%d') if entry.created_at else '—' }}</li>
+                <li class="list-group-item"><small class="text-muted">Updated</small><br>{{ entry.updated_at.strftime('%Y-%m-%d') if entry.updated_at else '—' }}</li>
+            </ul>
+        </div>
+
+        {% if evidence %}
+        <div class="card shadow-sm mb-3">
+            <div class="card-header"><strong><i class="bi bi-link-45deg"></i> Evidence Links</strong></div>
+            <ul class="list-group list-group-flush">
+                {% for link in evidence %}
+                <li class="list-group-item"><a href="{{ link }}" target="_blank" rel="noopener noreferrer" class="text-break">{{ link }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

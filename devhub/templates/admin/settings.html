@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Admin Settings — Dev Hub{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2><i class="bi bi-gear"></i> Admin Settings</h2>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header"><strong>Application Configuration</strong></div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><small class="text-muted">Version</small><br><strong>{{ config_info.version }}</strong></li>
+                <li class="list-group-item"><small class="text-muted">Python Version</small><br><code>{{ config_info.python_version }}</code></li>
+                <li class="list-group-item"><small class="text-muted">Environment</small><br><span class="badge bg-{% if config_info.environment == 'production' %}danger{% else %}warning text-dark{% endif %}">{{ config_info.environment }}</span></li>
+                <li class="list-group-item"><small class="text-muted">Database</small><br><code>{{ config_info.db_url_masked }}</code></li>
+                <li class="list-group-item"><small class="text-muted">Upload Directory</small><br><code>{{ config_info.upload_dir }}</code></li>
+                <li class="list-group-item"><small class="text-muted">Quarantine Directory</small><br><code>{{ config_info.quarantine_dir }}</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header"><strong>Feature Flags</strong></div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Script Execution
+                    {% if config_info.script_execution %}
+                    <span class="badge bg-success">Enabled</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Disabled</span>
+                    {% endif %}
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Package Install
+                    {% if config_info.package_install %}
+                    <span class="badge bg-success">Enabled</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Disabled</span>
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+            <div class="card-header"><strong>Workspace Roots</strong></div>
+            <ul class="list-group list-group-flush">
+                {% for root in config_info.workspace_roots %}
+                <li class="list-group-item"><code>{{ root }}</code></li>
+                {% else %}
+                <li class="list-group-item text-muted">No workspace roots configured. Set <code>DEVHUB_WORKSPACE_ROOTS</code>.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+            <div class="card-header"><strong>Quick Links</strong></div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><a href="{{ url_for('admin.users') }}"><i class="bi bi-people"></i> Manage Users</a></li>
+                <li class="list-group-item"><a href="{{ url_for('admin.audit') }}"><i class="bi bi-journal-check"></i> Audit Log</a></li>
+                <li class="list-group-item"><a href="{{ url_for('api.status') }}" target="_blank"><i class="bi bi-activity"></i> API Status</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

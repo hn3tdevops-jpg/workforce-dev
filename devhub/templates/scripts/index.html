@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Scripts — Workforce Dev Hub{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2><i class="bi bi-terminal"></i> Script Library</h2>
+        {% if not execution_enabled %}
+        <div class="alert alert-warning py-1 px-3 d-inline-block">
+            <small><i class="bi bi-shield-exclamation"></i> Script execution is <strong>disabled</strong>. Set <code>DEVHUB_ENABLE_SCRIPT_EXECUTION=true</code> to enable.</small>
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-auto">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('scripts.new') }}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Script</a>
+        {% endif %}
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-3">
+        <select name="project_id" class="form-select">
+            <option value="">All Projects</option>
+            {% for p in projects %}
+            <option value="{{ p.id }}" {% if request.args.get('project_id', type=int) == p.id %}selected{% endif %}>{{ p.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="risk" class="form-select">
+            <option value="">All Risk Levels</option>
+            <option value="safe" {% if request.args.get('risk') == 'safe' %}selected{% endif %}>Safe</option>
+            <option value="moderate" {% if request.args.get('risk') == 'moderate' %}selected{% endif %}>Moderate</option>
+            <option value="dangerous" {% if request.args.get('risk') == 'dangerous' %}selected{% endif %}>Dangerous</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Filter</button>
+        <a href="{{ url_for('scripts.index') }}" class="btn btn-outline-secondary">Reset</a>
+    </div>
+</form>
+
+{% if scripts %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Name</th>
+                <th>Project</th>
+                <th>Risk</th>
+                <th>Last Run</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in scripts %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('scripts.view', script_id=s.id) }}" class="fw-semibold text-decoration-none">{{ s.name }}</a>
+                    {% if s.description %}<br><small class="text-muted">{{ s.description[:60] }}{% if s.description|length > 60 %}…{% endif %}</small>{% endif %}
+                </td>
+                <td>{% if s.project %}<a href="{{ url_for('projects.view', slug=s.project.slug) }}">{{ s.project.name }}</a>{% else %}&mdash;{% endif %}</td>
+                <td><span class="badge bg-{% if s.risk_level == 'safe' %}success{% elif s.risk_level == 'moderate' %}warning text-dark{% else %}danger{% endif %}">{{ s.risk_level }}</span></td>
+                <td><small class="text-muted">{% if s.last_run_at %}{{ s.last_run_at.strftime('%Y-%m-%d') }}{% else %}Never{% endif %}</small></td>
+                <td>{% if s.last_run_status %}<span class="badge bg-secondary">{{ s.last_run_status }}</span>{% else %}&mdash;{% endif %}</td>
+                <td>
+                    <a href="{{ url_for('scripts.view', script_id=s.id) }}" class="btn btn-sm btn-outline-secondary">View</a>
+                    {% if current_user.is_authenticated %}<a href="{{ url_for('scripts.edit', script_id=s.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">No scripts found.</div>
+{% endif %}
+{% endblock %}

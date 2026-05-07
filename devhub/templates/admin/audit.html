@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Audit Log — Admin{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2><i class="bi bi-journal-check"></i> Audit Log</h2>
+        <p class="text-muted">Last 100 audit events.</p>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Action</th>
+                    <th>Resource</th>
+                    <th>User</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td><small>{{ log.created_at.strftime('%Y-%m-%d %H:%M') if log.created_at else '' }}</small></td>
+                    <td><code>{{ log.action }}</code></td>
+                    <td>{% if log.resource_type %}{{ log.resource_type }}{% if log.resource_id %}#{{ log.resource_id }}{% endif %}{% else %}&mdash;{% endif %}</td>
+                    <td><small>{{ log.user_email or '—' }}</small></td>
+                    <td><small class="text-muted">{{ log.details or '' }}</small></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center text-muted">No audit events.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

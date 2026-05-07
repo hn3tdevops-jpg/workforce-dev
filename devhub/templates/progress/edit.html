@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{% if entry %}Edit Entry{% else %}New Progress Entry{% endif %} — Dev Hub{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('progress.index') }}">Progress</a></li>
+                <li class="breadcrumb-item active">{% if entry %}Edit{% else %}New Entry{% endif %}</li>
+            </ol>
+        </nav>
+        <h2>{% if entry %}Edit Progress Entry{% else %}New Progress Entry{% endif %}</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label fw-semibold") }}
+                        {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+                        {% for e in form.title.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            {{ form.status.label(class="form-label fw-semibold") }}
+                            {{ form.status(class="form-select") }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.project_id.label(class="form-label fw-semibold") }}
+                            {{ form.project_id(class="form-select") }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.tags.label(class="form-label fw-semibold") }}
+                            {{ form.tags(class="form-control", placeholder="api, testing") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label fw-semibold") }}
+                        {{ form.description(class="form-control", rows=4) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.commands_run.label(class="form-label fw-semibold") }}
+                        {{ form.commands_run(class="form-control font-monospace", rows=3) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.test_results.label(class="form-label fw-semibold") }}
+                        {{ form.test_results(class="form-control font-monospace", rows=3) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.evidence_links.label(class="form-label fw-semibold") }}
+                        {{ form.evidence_links(class="form-control", rows=3, placeholder="https://github.com/...\nhttps://example.com/...") }}
+                        <div class="form-text">One URL per line.</div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.file_paths.label(class="form-label fw-semibold") }}
+                        {{ form.file_paths(class="form-control font-monospace", rows=2) }}
+                        <div class="form-text">One file path per line.</div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.notes.label(class="form-label fw-semibold") }}
+                        {{ form.notes(class="form-control", rows=3) }}
+                    </div>
+                    <div class="d-flex gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('progress.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Tracked Files — Dev Hub{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2><i class="bi bi-files"></i> Tracked Files</h2>
+        <p class="text-muted">Files indexed by the workspace scanner. Run <code>flask scan --root /path/to/workspace</code> to update.</p>
+    </div>
+</div>
+
+{% if files %}
+<div class="table-responsive">
+    <table class="table table-sm table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Path</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Modified</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in files %}
+            <tr>
+                <td><code class="small text-break">{{ f.file_path }}</code></td>
+                <td><span class="badge bg-secondary">{{ f.file_type or '?' }}</span></td>
+                <td><small class="text-muted">{{ f.size_bytes or 0 }}</small></td>
+                <td><small class="text-muted">{{ f.last_modified.strftime('%Y-%m-%d %H:%M') if f.last_modified else '—' }}</small></td>
+                <td><span class="badge bg-{% if f.status == 'present' %}success{% elif f.status == 'missing' %}danger{% else %}warning text-dark{% endif %}">{{ f.status }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">No files tracked yet. Run <code>flask scan --root /path/to/workspace</code> to index your workspace.</div>
+{% endif %}
+{% endblock %}
