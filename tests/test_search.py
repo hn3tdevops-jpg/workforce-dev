@@ -1,3 +1,7 @@
+from devhub.app import create_app
+from devhub.config import TestingConfig
+
+
 def test_search_endpoint(client):
     response = client.get("/api/search?q=test")
     assert response.status_code == 200
@@ -12,20 +16,23 @@ def test_search_no_query(client):
     assert response.status_code == 400
 
 
-def test_search_page(client):
-    response = client.get("/search")
+def test_search_page():
+    anon_client = create_app(TestingConfig).test_client()
+    response = anon_client.get("/search")
     assert response.status_code == 302
     assert "/login" in response.headers["Location"]
 
 
-def test_search_page_with_query_requires_login(client):
-    response = client.get("/search?q=test")
+def test_search_page_with_query_requires_login():
+    anon_client = create_app(TestingConfig).test_client()
+    response = anon_client.get("/search?q=test")
     assert response.status_code == 302
     assert "/login" in response.headers["Location"]
 
 
-def test_files_page_requires_login(client):
-    response = client.get("/files")
+def test_files_page_requires_login():
+    anon_client = create_app(TestingConfig).test_client()
+    response = anon_client.get("/files")
     assert response.status_code == 302
     assert "/login" in response.headers["Location"]
 
