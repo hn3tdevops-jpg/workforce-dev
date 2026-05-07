@@ -29,10 +29,77 @@ FLASK_APP=wsgi.py flask run
 
 Open http://localhost:5000. Create an admin user with `FLASK_APP=wsgi.py flask create-admin`.
 
+## UI Overview
+
+The DevHub UI is built with **Bootstrap 5**, **Bootstrap Icons**, and minimal vanilla JavaScript.
+There is no npm/Vite/Node build step — all assets are either served from Flask's `static/` folder or
+loaded from CDN. This makes the app fully compatible with PythonAnywhere.
+
+### Login screen (`/login`)
+
+A standalone centered login card with:
+- Workforce Developer Hub branding and subtitle
+- Email, password, and Remember Me fields
+- Submit button with loading/disabled state during submission
+- Friendly flash message styling for invalid credentials
+- "Authorized users only" security note
+
+### App shell (authenticated pages)
+
+- **Topbar** — Dark branded navbar with active-link highlighting for all sections,
+  user email dropdown with admin badge, Sign Out link
+- **Flash messages** — Categorised Bootstrap alerts with icons and auto-dismiss (5 s)
+- **Footer** — Links to `/health` and `/api/status`
+
+### Dashboard (`/`)
+
+- **Stats row** — Six clickable summary cards showing live counts for
+  Projects, Docs, Progress entries, Scripts, Packages, and Tracked Files
+- **Active projects** — Cards for every active project
+- **Recent activity** — Progress entries, docs, packages, files
+- **Quick actions** — Log Progress, New Doc, Upload Package (authenticated users)
+
+### Resource pages
+
+Docs, Progress, Scripts, Packages, and Projects pages all feature:
+- Filter / search forms
+- Status badges (`draft`, `canonical`, `stale`, `archived`, `quarantined`, `approved`, etc.)
+- Risk-level badges (safe / moderate / dangerous)
+- Empty-state messages with action links
+
+## How to Run Locally
+
+```bash
+source .venv/bin/activate
+FLASK_APP=wsgi.py flask run
+```
+
 ## Running Tests
 
 ```bash
 pytest tests/ -v
+```
+
+### Testing UI Changes
+
+The `tests/test_ui.py` suite covers:
+- Login page renders with branding, subtitle, security note
+- Login accepts valid credentials and rejects invalid ones
+- Dashboard renders for anonymous and authenticated users
+- Dashboard shows stats cards and quick-action buttons
+- Primary nav links are present
+- Package approve/install admin-only controls are unaffected
+
+Run the full suite before and after UI changes:
+
+```bash
+pytest tests/ -v
+```
+
+Lint Python with:
+
+```bash
+ruff check devhub/
 ```
 
 ## Tech Stack
@@ -40,9 +107,11 @@ pytest tests/ -v
 - **Flask 3** with app factory pattern
 - **SQLAlchemy 2** + **Flask-Migrate** (Alembic) for migrations
 - **Flask-Login** + **Flask-WTF** (CSRF protection)
-- **Bootstrap 5** (CDN) + Bootstrap Icons
+- **Bootstrap 5** (CDN) + Bootstrap Icons (CDN)
+- **Vanilla JavaScript** — no npm/Vite/React required
 - **Pytest** + **pytest-flask** for testing
 - **Ruff** for linting
+- **PythonAnywhere**-compatible (no build step)
 
 ## Project Structure
 

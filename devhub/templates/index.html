@@ -1,23 +1,93 @@
 {% extends "base.html" %}
 {% block title %}Dashboard — Workforce Dev Hub{% endblock %}
 {% block content %}
-<div class="row mb-4">
+<div class="row mb-4 align-items-center">
     <div class="col">
-        <h1 class="h3"><i class="bi bi-speedometer2"></i> Dashboard</h1>
-        <p class="text-muted">Workforce Developer Hub — central platform for project management, documentation, and tooling.</p>
+        <h1 class="h3 mb-1"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+        <p class="text-muted mb-0">Workforce Developer Hub — central platform for project management, documentation, and tooling.</p>
     </div>
-    <div class="col-auto align-self-center">
+    <div class="col-auto">
         {% if current_user.is_authenticated %}
-        <a href="{{ url_for('progress.new') }}" class="btn btn-primary me-1"><i class="bi bi-plus-circle"></i> Log Progress</a>
-        <a href="{{ url_for('docs.new') }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-plus"></i> New Doc</a>
+        <a href="{{ url_for('progress.new') }}" class="btn btn-primary me-1">
+            <i class="bi bi-plus-circle"></i> Log Progress
+        </a>
+        <a href="{{ url_for('docs.new') }}" class="btn btn-outline-primary me-1">
+            <i class="bi bi-file-earmark-plus"></i> New Doc
+        </a>
+        <a href="{{ url_for('packages.upload') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-cloud-upload"></i> Upload Package
+        </a>
         {% endif %}
+    </div>
+</div>
+
+<!-- Stats summary -->
+<div class="row row-cols-2 row-cols-sm-3 row-cols-lg-6 g-3 mb-4">
+    <div class="col">
+        <a href="{{ url_for('projects.index') }}" class="text-decoration-none">
+            <div class="card dh-stat-card h-100 text-center p-3">
+                <div class="dh-stat-icon text-primary"><i class="bi bi-folder2-open"></i></div>
+                <div class="dh-stat-value">{{ stats.projects }}</div>
+                <div class="dh-stat-label">Projects</div>
+            </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{{ url_for('docs.index') }}" class="text-decoration-none">
+            <div class="card dh-stat-card h-100 text-center p-3">
+                <div class="dh-stat-icon text-success"><i class="bi bi-file-earmark-text"></i></div>
+                <div class="dh-stat-value">{{ stats.docs }}</div>
+                <div class="dh-stat-label">Docs</div>
+            </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{{ url_for('progress.index') }}" class="text-decoration-none">
+            <div class="card dh-stat-card h-100 text-center p-3">
+                <div class="dh-stat-icon text-info"><i class="bi bi-clock-history"></i></div>
+                <div class="dh-stat-value">{{ stats.progress }}</div>
+                <div class="dh-stat-label">Progress</div>
+            </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{{ url_for('scripts.index') }}" class="text-decoration-none">
+            <div class="card dh-stat-card h-100 text-center p-3">
+                <div class="dh-stat-icon text-warning"><i class="bi bi-terminal"></i></div>
+                <div class="dh-stat-value">{{ stats.scripts }}</div>
+                <div class="dh-stat-label">Scripts</div>
+            </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{{ url_for('packages.index') }}" class="text-decoration-none">
+            <div class="card dh-stat-card h-100 text-center p-3">
+                <div class="dh-stat-icon text-secondary"><i class="bi bi-archive"></i></div>
+                <div class="dh-stat-value">{{ stats.packages }}</div>
+                <div class="dh-stat-label">Packages</div>
+            </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{{ url_for('main.files') }}" class="text-decoration-none">
+            <div class="card dh-stat-card h-100 text-center p-3">
+                <div class="dh-stat-icon text-danger"><i class="bi bi-files"></i></div>
+                <div class="dh-stat-value">{{ stats.files }}</div>
+                <div class="dh-stat-label">Tracked Files</div>
+            </div>
+        </a>
     </div>
 </div>
 
 <!-- Active Projects -->
 <div class="row mb-4">
     <div class="col-12">
-        <h5 class="text-uppercase text-muted fw-semibold mb-3"><i class="bi bi-folder2-open"></i> Active Projects</h5>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="dh-section-heading mb-0">
+                <i class="bi bi-folder2-open me-1"></i> Active Projects
+            </h5>
+            <a href="{{ url_for('projects.index') }}" class="btn btn-sm btn-outline-secondary">All Projects</a>
+        </div>
         {% if projects %}
         <div class="row row-cols-1 row-cols-md-3 g-3">
             {% for project in projects %}
@@ -31,14 +101,22 @@
                     </div>
                     <div class="card-footer d-flex justify-content-between align-items-center">
                         <span class="badge bg-success">{{ project.status }}</span>
-                        <small class="text-muted">{{ project.progress_entries.count() }} entries</small>
+                        <small class="text-muted">
+                            <i class="bi bi-clock-history me-1"></i>{{ project.progress_entries.count() }} entries
+                        </small>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <div class="alert alert-info">No active projects. <a href="{{ url_for('projects.index') }}">View all projects</a>.</div>
+        <div class="dh-empty-state">
+            <i class="bi bi-folder2 dh-empty-icon"></i>
+            <p>No active projects yet.</p>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('projects.new') }}" class="btn btn-sm btn-primary">Create a project</a>
+            {% endif %}
+        </div>
         {% endif %}
     </div>
 </div>
@@ -47,8 +125,8 @@
     <!-- Recent Progress -->
     <div class="col-md-6">
         <div class="card shadow-sm h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <strong><i class="bi bi-clock-history"></i> Recent Progress</strong>
+            <div class="card-header dh-card-header">
+                <strong><i class="bi bi-clock-history me-1"></i> Recent Progress</strong>
                 <a href="{{ url_for('progress.index') }}" class="btn btn-sm btn-outline-secondary">View All</a>
             </div>
             <ul class="list-group list-group-flush">
@@ -58,10 +136,17 @@
                         <a href="{{ url_for('progress.view', entry_id=entry.id) }}" class="text-decoration-none text-dark">{{ entry.title }}</a>
                         <span class="badge bg-{% if entry.status == 'completed' %}success{% elif entry.status == 'blocked' %}danger{% elif entry.status == 'in-progress' %}primary{% else %}secondary{% endif %} ms-2">{{ entry.status }}</span>
                     </div>
-                    <small class="text-muted">{{ entry.entry_date.strftime('%Y-%m-%d') if entry.entry_date else '' }}{% if entry.project %} &mdash; {{ entry.project.name }}{% endif %}</small>
+                    <small class="text-muted">
+                        {{ entry.entry_date.strftime('%Y-%m-%d') if entry.entry_date else '' }}{% if entry.project %} &mdash; {{ entry.project.name }}{% endif %}
+                    </small>
                 </li>
                 {% else %}
-                <li class="list-group-item text-muted">No progress entries yet.</li>
+                <li class="list-group-item dh-empty-list-item">
+                    <i class="bi bi-inbox me-1"></i> No progress entries yet.
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('progress.new') }}">Add one</a>
+                    {% endif %}
+                </li>
                 {% endfor %}
             </ul>
         </div>
@@ -70,8 +155,8 @@
     <!-- Recent Docs -->
     <div class="col-md-6">
         <div class="card shadow-sm h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <strong><i class="bi bi-file-earmark-text"></i> Recent Docs</strong>
+            <div class="card-header dh-card-header">
+                <strong><i class="bi bi-file-earmark-text me-1"></i> Recent Docs</strong>
                 <a href="{{ url_for('docs.index') }}" class="btn btn-sm btn-outline-secondary">View All</a>
             </div>
             <ul class="list-group list-group-flush">
@@ -81,10 +166,17 @@
                         <a href="{{ url_for('docs.view', doc_id=doc.id) }}" class="text-decoration-none text-dark">{{ doc.title }}</a>
                         <span class="badge bg-{% if doc.status == 'canonical' %}success{% elif doc.status == 'draft' %}warning text-dark{% elif doc.status == 'stale' %}secondary{% else %}light text-dark{% endif %} ms-2">{{ doc.status }}</span>
                     </div>
-                    <small class="text-muted">{{ doc.updated_at.strftime('%Y-%m-%d') if doc.updated_at else '' }}{% if doc.project %} &mdash; {{ doc.project.name }}{% endif %}</small>
+                    <small class="text-muted">
+                        {{ doc.updated_at.strftime('%Y-%m-%d') if doc.updated_at else '' }}{% if doc.project %} &mdash; {{ doc.project.name }}{% endif %}
+                    </small>
                 </li>
                 {% else %}
-                <li class="list-group-item text-muted">No documents yet.</li>
+                <li class="list-group-item dh-empty-list-item">
+                    <i class="bi bi-inbox me-1"></i> No documents yet.
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('docs.new') }}">Add one</a>
+                    {% endif %}
+                </li>
                 {% endfor %}
             </ul>
         </div>
@@ -93,8 +185,8 @@
     <!-- Recent Packages -->
     <div class="col-md-6">
         <div class="card shadow-sm h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <strong><i class="bi bi-archive"></i> Recent Packages</strong>
+            <div class="card-header dh-card-header">
+                <strong><i class="bi bi-archive me-1"></i> Recent Packages</strong>
                 <a href="{{ url_for('packages.index') }}" class="btn btn-sm btn-outline-secondary">View All</a>
             </div>
             <ul class="list-group list-group-flush">
@@ -104,10 +196,17 @@
                         <a href="{{ url_for('packages.view', pkg_id=pkg.id) }}" class="text-decoration-none text-dark">{{ pkg.name or pkg.filename }}</a>
                         <span class="badge bg-{% if pkg.status == 'approved' %}success{% elif pkg.status == 'installed' %}primary{% elif pkg.status == 'rejected' %}danger{% else %}warning text-dark{% endif %} ms-2">{{ pkg.status }}</span>
                     </div>
-                    <small class="text-muted">{{ pkg.uploaded_at.strftime('%Y-%m-%d') if pkg.uploaded_at else '' }}{% if pkg.version %} v{{ pkg.version }}{% endif %}</small>
+                    <small class="text-muted">
+                        {{ pkg.uploaded_at.strftime('%Y-%m-%d') if pkg.uploaded_at else '' }}{% if pkg.version %} v{{ pkg.version }}{% endif %}
+                    </small>
                 </li>
                 {% else %}
-                <li class="list-group-item text-muted">No packages uploaded yet.</li>
+                <li class="list-group-item dh-empty-list-item">
+                    <i class="bi bi-inbox me-1"></i> No packages uploaded yet.
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('packages.upload') }}">Upload one</a>
+                    {% endif %}
+                </li>
                 {% endfor %}
             </ul>
         </div>
@@ -116,18 +215,23 @@
     <!-- Recent Files -->
     <div class="col-md-6">
         <div class="card shadow-sm h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <strong><i class="bi bi-files"></i> Recently Modified Files</strong>
+            <div class="card-header dh-card-header">
+                <strong><i class="bi bi-files me-1"></i> Recently Modified Files</strong>
                 <a href="{{ url_for('main.files') }}" class="btn btn-sm btn-outline-secondary">View All</a>
             </div>
             <ul class="list-group list-group-flush">
                 {% for f in recent_files %}
                 <li class="list-group-item">
                     <small class="font-monospace text-break">{{ f.file_path }}</small>
-                    <div class="text-muted" style="font-size:0.75rem;">{{ f.last_modified.strftime('%Y-%m-%d %H:%M') if f.last_modified else '' }} &mdash; {{ f.size_bytes or 0 }} bytes</div>
+                    <div class="text-muted" style="font-size:0.75rem;">
+                        {{ f.last_modified.strftime('%Y-%m-%d %H:%M') if f.last_modified else '' }} &mdash; {{ f.size_bytes or 0 }} bytes
+                    </div>
                 </li>
                 {% else %}
-                <li class="list-group-item text-muted">No files tracked. Run <code>flask scan --root /path</code> to index files.</li>
+                <li class="list-group-item dh-empty-list-item">
+                    <i class="bi bi-inbox me-1"></i> No files tracked.
+                    Run <code>flask scan --root /path</code> to index files.
+                </li>
                 {% endfor %}
             </ul>
         </div>
