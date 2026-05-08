@@ -4,6 +4,9 @@ from devhub.app import create_app
 from devhub.config import TestingConfig
 from devhub.extensions import db as _db
 
+TEST_ADMIN_EMAIL = "testadmin@example.com"
+TEST_ADMIN_PASSWORD = "testpass123"
+
 
 @pytest.fixture(scope="session")
 def app():
@@ -43,10 +46,10 @@ def admin_user(app):
     with app.app_context():
         from devhub.models import User
 
-        user = User.query.filter_by(email="testadmin@example.com").first()
+        user = User.query.filter_by(email=TEST_ADMIN_EMAIL).first()
         if not user:
-            user = User(email="testadmin@example.com", is_admin=True)
-            user.set_password("testpass123")
+            user = User(email=TEST_ADMIN_EMAIL, is_admin=True)
+            user.set_password(TEST_ADMIN_PASSWORD)
             _db.session.add(user)
             _db.session.commit()
         return _UserProxy(user.id)
@@ -57,7 +60,7 @@ def authenticated_client(app, admin_user):
     client = app.test_client()
     login_response = client.post(
         "/login",
-        data={"email": "testadmin@example.com", "password": "testpass123"},
+        data={"email": TEST_ADMIN_EMAIL, "password": TEST_ADMIN_PASSWORD},
         follow_redirects=False,
     )
     assert login_response.status_code == 302
