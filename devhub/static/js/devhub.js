@@ -29,7 +29,10 @@
     // (except forms with data-no-loading attribute)
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll("form:not([data-no-loading])").forEach(function (form) {
-            form.addEventListener("submit", function () {
+            form.addEventListener("submit", function (e) {
+                // If the submission was already cancelled (e.g. by the data-confirm
+                // handler registered above), do not enter loading state.
+                if (e.defaultPrevented) return;
                 const btn = form.querySelector("[type=submit]");
                 if (!btn || btn.disabled) return;
                 // Store original text so we can restore it if needed
@@ -39,16 +42,10 @@
                     // Already has dual-state markup (e.g. login page handles its own)
                     return;
                 }
-                const original = btn.innerHTML;
                 btn.innerHTML =
                     '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>' +
                     "Please wait\u2026";
                 btn.disabled = true;
-                // Re-enable after 8 s in case form validation rejects
-                setTimeout(function () {
-                    btn.disabled = false;
-                    btn.innerHTML = original;
-                }, 8000);
             });
         });
     });
@@ -73,12 +70,14 @@
             btn.addEventListener("click", function () {
                 const text = btn.getAttribute("data-copy");
                 if (!text) return;
-                navigator.clipboard.writeText(text).then(function () {
+
+                function showFeedback() {
                     const original = btn.innerHTML;
                     btn.innerHTML = '<i class="bi bi-check2"></i>';
                     setTimeout(function () { btn.innerHTML = original; }, 1500);
-                }).catch(function () {
-                    // Fallback for browsers without Clipboard API support (intentional)
+                }
+
+                function fallbackCopy() {
                     const ta = document.createElement("textarea");
                     ta.value = text;
                     ta.style.position = "fixed";
@@ -89,7 +88,14 @@
                     // eslint-disable-next-line deprecation/deprecation
                     document.execCommand("copy");
                     document.body.removeChild(ta);
-                });
+                    showFeedback();
+                }
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(showFeedback, fallbackCopy);
+                } else {
+                    fallbackCopy();
+                }
             });
         });
     });

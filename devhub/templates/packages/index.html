@@ -1,21 +1,16 @@
 {% extends "base.html" %}
+{% from "_ui.html" import page_header, empty_state %}
 {% block title %}Packages — Workforce Dev Hub{% endblock %}
 {% block content %}
-<div class="row mb-3">
-    <div class="col">
-        <h2><i class="bi bi-archive"></i> Packages</h2>
-        {% if not install_enabled %}
-        <div class="alert alert-info py-1 px-3 d-inline-block">
-            <small><i class="bi bi-info-circle"></i> Package installation is <strong>disabled</strong>. Set <code>DEVHUB_ENABLE_PACKAGE_INSTALL=true</code> to enable.</small>
-        </div>
-        {% endif %}
-    </div>
-    <div class="col-auto">
-        {% if current_user.is_authenticated %}
-        <a href="{{ url_for('packages.upload') }}" class="btn btn-primary"><i class="bi bi-cloud-upload"></i> Upload Package</a>
-        {% endif %}
-    </div>
-</div>
+{% set actions %}
+{% if current_user.is_authenticated %}
+<a href="{{ url_for('packages.upload') }}" class="btn btn-primary"><i class="bi bi-cloud-upload"></i> Upload package</a>
+{% endif %}
+{% endset %}
+{{ page_header("Packages", "Review quarantined package uploads with manual approval controls.", actions) }}
+{% if not install_enabled %}
+<div class="alert alert-info"><i class="bi bi-info-circle"></i> Package installation is <strong>disabled</strong>. Set <code>DEVHUB_ENABLE_PACKAGE_INSTALL=true</code> to enable.</div>
+{% endif %}
 
 {% if packages %}
 <div class="table-responsive">
@@ -50,6 +45,6 @@
     </table>
 </div>
 {% else %}
-<div class="alert alert-info">No packages uploaded yet.</div>
+{{ empty_state("No packages uploaded yet", "Upload a package zip to begin validation and manual review.") }}
 {% endif %}
 {% endblock %}

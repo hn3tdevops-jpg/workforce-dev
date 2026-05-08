@@ -2,6 +2,7 @@ import sys
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
+from flask_login import login_required
 
 from devhub.models import Document, ProgressEntry, Project, Script
 from devhub.search import search_all
@@ -26,6 +27,7 @@ def status():
 
 
 @bp.route("/search")
+@login_required
 def search():
     q = request.args.get("q", "").strip()
     if not q:
@@ -35,6 +37,7 @@ def search():
 
 
 @bp.route("/progress/recent")
+@login_required
 def recent_progress():
     entries = ProgressEntry.query.order_by(ProgressEntry.entry_date.desc()).limit(10).all()
     return jsonify(
@@ -52,6 +55,7 @@ def recent_progress():
 
 
 @bp.route("/projects")
+@login_required
 def projects():
     projs = Project.query.all()
     return jsonify(
@@ -69,6 +73,7 @@ def projects():
 
 
 @bp.route("/docs")
+@login_required
 def docs():
     all_docs = Document.query.all()
     return jsonify(
@@ -86,6 +91,7 @@ def docs():
 
 
 @bp.route("/scripts")
+@login_required
 def scripts():
     all_scripts = Script.query.all()
     return jsonify(

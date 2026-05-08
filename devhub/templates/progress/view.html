@@ -19,7 +19,7 @@
     <div class="col-auto">
         {% if current_user.is_authenticated %}
         <a href="{{ url_for('progress.edit', entry_id=entry.id) }}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i> Edit</a>
-        <form method="post" action="{{ url_for('progress.delete', entry_id=entry.id) }}" class="d-inline" onsubmit="return confirm('Delete this entry?')">
+        <form method="post" action="{{ url_for('progress.delete', entry_id=entry.id) }}" class="d-inline" data-confirm="Delete this entry?">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i></button>
         </form>

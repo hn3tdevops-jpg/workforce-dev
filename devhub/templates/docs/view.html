@@ -21,7 +21,7 @@
     <div class="col-auto">
         {% if current_user.is_authenticated %}
         <a href="{{ url_for('docs.edit', doc_id=doc.id) }}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i> Edit</a>
-        <form method="post" action="{{ url_for('docs.delete', doc_id=doc.id) }}" class="d-inline" onsubmit="return confirm('Delete this document?')">
+        <form method="post" action="{{ url_for('docs.delete', doc_id=doc.id) }}" class="d-inline" data-confirm="Delete this document?">
             {{ csrf_token_input() if csrf_token_input is defined }}
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i></button>

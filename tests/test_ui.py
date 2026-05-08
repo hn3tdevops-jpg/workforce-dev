@@ -3,12 +3,9 @@ UI tests: login page branding, dashboard render, navigation links,
 and package security regressions.
 """
 
-import io
-import json
-import zipfile
+from pathlib import Path
 
 import pytest
-
 
 # ---------------------------------------------------------------------------
 # Isolated client fixture for login-page tests
@@ -84,6 +81,21 @@ def test_login_page_has_form(ui_client):
     assert b"<form" in response.data
 
 
+def test_login_template_classes_are_styled(ui_client):
+    response = ui_client.get("/login")
+    assert b'class="dh-login-body"' in response.data
+    assert b'dh-login-wrap' in response.data
+    assert b'dh-login-card' in response.data
+    assert b'dh-login-icon' in response.data
+
+    css = Path(__file__).resolve().parents[1] / "devhub" / "static" / "css" / "devhub.css"
+    css_text = css.read_text(encoding="utf-8")
+    assert ".dh-login-body" in css_text
+    assert ".dh-login-wrap" in css_text
+    assert ".dh-login-card" in css_text
+    assert ".dh-login-icon" in css_text
+
+
 def test_login_invalid_credentials_flashes_error(ui_client):
     response = ui_client.post(
         "/login",
@@ -113,8 +125,11 @@ def test_login_valid_credentials_redirects_to_dashboard(ui_client):
 
 
 def test_dashboard_renders_when_anonymous(client):
+    with client.session_transaction() as sess:
+        sess.clear()
     response = client.get("/")
-    assert response.status_code == 200
+    assert response.status_code == 302
+    assert "/login" in response.headers["Location"]
 
 
 def test_dashboard_renders_after_login(client, admin_user):
@@ -124,6 +139,23 @@ def test_dashboard_renders_after_login(client, admin_user):
     response = client.get("/")
     assert response.status_code == 200
     assert b"Dashboard" in response.data
+
+
+def test_base_template_classes_are_styled(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
+    response = client.get("/")
+    assert response.status_code == 200
+    assert b"dh-topbar" in response.data
+    assert b"dh-footer" in response.data
+    assert b"dh-footer-link" in response.data
+
+    css = Path(__file__).resolve().parents[1] / "devhub" / "static" / "css" / "devhub.css"
+    css_text = css.read_text(encoding="utf-8")
+    assert ".dh-topbar" in css_text
+    assert ".dh-footer" in css_text
+    assert ".dh-footer-link" in css_text
 
 
 def test_dashboard_contains_stats_section(client, admin_user):
@@ -152,32 +184,50 @@ def test_dashboard_quick_action_buttons_for_authed_user(client, admin_user):
 # ---------------------------------------------------------------------------
 
 
-def test_nav_dashboard_link(client):
+def test_nav_dashboard_link(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/")
     assert b"Dashboard" in response.data
 
 
-def test_nav_projects_link(client):
+def test_nav_projects_link(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/")
     assert b"/projects" in response.data
 
 
-def test_nav_docs_link(client):
+def test_nav_docs_link(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/")
     assert b"/docs" in response.data
 
 
-def test_nav_progress_link(client):
+def test_nav_progress_link(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/")
     assert b"/progress" in response.data
 
 
-def test_nav_scripts_link(client):
+def test_nav_scripts_link(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/")
     assert b"/scripts" in response.data
 
 
-def test_nav_packages_link(client):
+def test_nav_packages_link(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/")
     assert b"/packages" in response.data
 
@@ -300,3 +350,57 @@ def test_install_button_not_shown_to_non_admin(app, client, db):
         assert b"> Install<" not in page.data
     finally:
         app.config["ENABLE_PACKAGE_INSTALL"] = original
+
+
+def test_package_copy_button_uses_data_copy_attribute(app, client, db, admin_user):
+    import uuid
+
+    with app.app_context():
+        from devhub.models import Package
+
+        filename = f"copy-test-{uuid.uuid4().hex}.zip"
+        pkg = Package(
+            filename=filename,
+            quarantine_path=f"quarantine/copy/{uuid.uuid4().hex}.zip",
+            manifest_valid=True,
+            status="approved",
+            risk_level="safe",
+            requires_manual_review=False,
+        )
+        db.session.add(pkg)
+        db.session.commit()
+        pkg_id = pkg.id
+
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
+    page = client.get(f"/packages/{pkg_id}")
+    assert page.status_code == 200
+    assert f'data-copy="{filename}"'.encode() in page.data
+    assert b"data-copy-target" not in page.data
+
+
+def test_script_copy_buttons_use_data_copy_attribute(app, client, db, admin_user):
+    import uuid
+
+    with app.app_context():
+        from devhub.models import Script
+
+        script = Script(
+            name=f"copy-script-{uuid.uuid4().hex}",
+            risk_level="safe",
+            dry_run_command="echo dry",
+            normal_command="echo run",
+        )
+        db.session.add(script)
+        db.session.commit()
+        script_id = script.id
+
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
+    page = client.get(f"/scripts/{script_id}")
+    assert page.status_code == 200
+    assert b'data-copy="echo dry"' in page.data
+    assert b'data-copy="echo run"' in page.data
+    assert b"data-copy-target" not in page.data

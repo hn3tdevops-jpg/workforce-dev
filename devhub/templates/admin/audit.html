@@ -1,12 +1,8 @@
 {% extends "base.html" %}
+{% from "_ui.html" import page_header %}
 {% block title %}Audit Log — Admin{% endblock %}
 {% block content %}
-<div class="row mb-3">
-    <div class="col">
-        <h2><i class="bi bi-journal-check"></i> Audit Log</h2>
-        <p class="text-muted">Last 100 audit events.</p>
-    </div>
-</div>
+{{ page_header("Audit log", "Latest 100 security and operational events.") }}
 
 <div class="card shadow-sm">
     <div class="table-responsive">

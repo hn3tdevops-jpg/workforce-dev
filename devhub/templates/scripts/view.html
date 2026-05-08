@@ -40,11 +40,13 @@
             <div class="card-body">
                 <div class="mb-2">
                     <label class="form-label text-muted mb-1">Dry Run Command</label>
-                    <pre class="bg-light p-2 rounded mb-0 text-break">{{ script.dry_run_command or '—' }}</pre>
+                    <pre id="script-dry-command" class="bg-light p-2 rounded mb-1 text-break">{{ script.dry_run_command or '—' }}</pre>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-copy="{{ script.dry_run_command or '—' }}">Copy</button>
                 </div>
                 <div>
                     <label class="form-label text-muted mb-1">Normal Command</label>
-                    <pre class="bg-light p-2 rounded mb-0 text-break">{{ script.normal_command or '—' }}</pre>
+                    <pre id="script-normal-command" class="bg-light p-2 rounded mb-1 text-break">{{ script.normal_command or '—' }}</pre>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-copy="{{ script.normal_command or '—' }}">Copy</button>
                 </div>
             </div>
         </div>

@@ -1,11 +1,8 @@
 {% extends "base.html" %}
+{% from "_ui.html" import page_header %}
 {% block title %}Users — Admin{% endblock %}
 {% block content %}
-<div class="row mb-3">
-    <div class="col">
-        <h2><i class="bi bi-people"></i> Users</h2>
-    </div>
-</div>
+{{ page_header("Users", "Admin-only account overview and role visibility.") }}
 
 <div class="card shadow-sm">
     <div class="table-responsive">

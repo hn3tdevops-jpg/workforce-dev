@@ -1,0 +1,32 @@
+{% macro nav_link(label, endpoint_prefix, href, icon, endpoint=None) -%}
+{% set endpoint = endpoint or request.endpoint or '' %}
+<a
+    class="nav-link d-flex align-items-center gap-2 {% if endpoint.startswith(endpoint_prefix) %}active{% endif %}"
+    href="{{ href }}"
+>
+    <i class="bi {{ icon }}"></i> <span>{{ label }}</span>
+</a>
+{%- endmacro %}
+
+{% macro page_header(title, description='', actions='') -%}
+<div class="page-header d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ title }}</h1>
+        {% if description %}<p class="text-muted mb-0">{{ description }}</p>{% endif %}
+    </div>
+    {% if actions %}
+    <div class="d-flex flex-wrap gap-2">
+        {{ actions|safe }}
+    </div>
+    {% endif %}
+</div>
+{%- endmacro %}
+
+{% macro empty_state(title, body) -%}
+<div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5">
+        <h2 class="h5">{{ title }}</h2>
+        <p class="text-muted mb-0">{{ body }}</p>
+    </div>
+</div>
+{%- endmacro %}
