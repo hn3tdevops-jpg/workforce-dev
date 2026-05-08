@@ -1,4 +1,11 @@
-def test_search_endpoint(client):
+def _authenticate(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
+
+
+def test_search_endpoint(client, admin_user):
+    _authenticate(client, admin_user)
     response = client.get("/api/search?q=test")
     assert response.status_code == 200
     data = response.get_json()
@@ -7,7 +14,8 @@ def test_search_endpoint(client):
     assert "scripts" in data
 
 
-def test_search_no_query(client):
+def test_search_no_query(client, admin_user):
+    _authenticate(client, admin_user)
     response = client.get("/api/search")
     assert response.status_code == 400
 
