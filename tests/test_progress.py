@@ -1,12 +1,15 @@
-from devhub.models import ProgressEntry
-
-
-def test_progress_index(client):
+def test_progress_index(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/progress/")
     assert response.status_code == 200
 
 
-def test_progress_report(client):
+def test_progress_report(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/progress/report")
     assert response.status_code == 200
 

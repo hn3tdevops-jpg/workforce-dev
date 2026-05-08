@@ -36,6 +36,7 @@ class ProgressForm(FlaskForm):
 
 
 @bp.route("/")
+@login_required
 def index():
     project_id = request.args.get("project_id", type=int)
     status = request.args.get("status")
@@ -59,6 +60,7 @@ def index():
 
 
 @bp.route("/<int:entry_id>")
+@login_required
 def view(entry_id):
     entry = ProgressEntry.query.get_or_404(entry_id)
     evidence = []
@@ -151,6 +153,7 @@ def delete(entry_id):
 
 
 @bp.route("/report")
+@login_required
 def report():
     days = request.args.get("days", 30, type=int)
     project_id = request.args.get("project_id", type=int)
