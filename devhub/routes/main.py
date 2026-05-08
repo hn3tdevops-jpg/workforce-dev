@@ -35,6 +35,7 @@ def index():
 
 
 @bp.route("/search")
+@login_required
 def search():
     q = request.args.get("q", "").strip()
     results = {}
@@ -44,6 +45,7 @@ def search():
 
 
 @bp.route("/files")
+@login_required
 def files():
     tracked_files = TrackedFile.query.order_by(TrackedFile.last_modified.desc()).all()
     return render_template("files/index.html", files=tracked_files)

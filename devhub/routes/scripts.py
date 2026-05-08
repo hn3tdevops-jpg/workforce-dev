@@ -28,6 +28,7 @@ class ScriptForm(FlaskForm):
 
 
 @bp.route("/")
+@login_required
 def index():
     project_id = request.args.get("project_id", type=int)
     risk = request.args.get("risk")
@@ -48,6 +49,7 @@ def index():
 
 
 @bp.route("/<int:script_id>")
+@login_required
 def view(script_id):
     script = Script.query.get_or_404(script_id)
     logs = (

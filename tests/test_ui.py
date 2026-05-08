@@ -352,7 +352,7 @@ def test_install_button_not_shown_to_non_admin(app, client, db):
         app.config["ENABLE_PACKAGE_INSTALL"] = original
 
 
-def test_package_copy_button_uses_data_copy_attribute(app, client, db):
+def test_package_copy_button_uses_data_copy_attribute(app, client, db, admin_user):
     import uuid
 
     with app.app_context():
@@ -371,13 +371,16 @@ def test_package_copy_button_uses_data_copy_attribute(app, client, db):
         db.session.commit()
         pkg_id = pkg.id
 
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     page = client.get(f"/packages/{pkg_id}")
     assert page.status_code == 200
     assert f'data-copy="{filename}"'.encode() in page.data
     assert b"data-copy-target" not in page.data
 
 
-def test_script_copy_buttons_use_data_copy_attribute(app, client, db):
+def test_script_copy_buttons_use_data_copy_attribute(app, client, db, admin_user):
     import uuid
 
     with app.app_context():
@@ -393,6 +396,9 @@ def test_script_copy_buttons_use_data_copy_attribute(app, client, db):
         db.session.commit()
         script_id = script.id
 
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     page = client.get(f"/scripts/{script_id}")
     assert page.status_code == 200
     assert b'data-copy="echo dry"' in page.data
