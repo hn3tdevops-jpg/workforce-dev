@@ -50,3 +50,16 @@ def admin_user(app):
             _db.session.add(user)
             _db.session.commit()
         return _UserProxy(user.id)
+
+
+@pytest.fixture(scope="function")
+def authenticated_client(app, admin_user):
+    client = app.test_client()
+    login_response = client.post(
+        "/login",
+        data={"email": "testadmin@example.com", "password": "testpass123"},
+        follow_redirects=False,
+    )
+    assert login_response.status_code == 302
+    yield client
+    client.get("/logout", follow_redirects=False)
