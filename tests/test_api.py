@@ -45,6 +45,13 @@ def test_api_recent_progress(authenticated_client):
     assert isinstance(data, list)
 
 
+@pytest.mark.parametrize("path", ["/api/status", "/health"])
+def test_api_public_endpoints_allow_anonymous(app, path):
+    client = app.test_client(use_cookies=False)
+    response = client.get(path, follow_redirects=False)
+    assert response.status_code == 200
+
+
 @pytest.mark.parametrize(
     "path",
     ["/api/search?q=", "/api/search?q=test", "/api/progress/recent", "/api/projects", "/api/docs", "/api/scripts"],
