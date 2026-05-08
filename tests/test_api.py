@@ -47,7 +47,7 @@ def test_api_recent_progress(authenticated_client):
 
 @pytest.mark.parametrize(
     "path",
-    ["/api/search?q=", "/api/progress/recent", "/api/projects", "/api/docs", "/api/scripts"],
+    ["/api/search?q=", "/api/search?q=test", "/api/progress/recent", "/api/projects", "/api/docs", "/api/scripts"],
 )
 def test_api_protected_endpoints_redirect_anonymous(app, path):
     client = app.test_client(use_cookies=False)
