@@ -242,3 +242,4 @@ class TestCopilotTaskBuilderRoute:
                 sess["_fresh"] = True
             response = fresh_client.get("/dev-hub/copilot-task-builder", follow_redirects=False)
         assert response.status_code in (301, 302)
+        assert "/dev-hub/copilot-task-builder" not in (response.headers.get("Location") or "")
