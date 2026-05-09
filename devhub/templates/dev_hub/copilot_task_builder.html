@@ -216,9 +216,6 @@ function copyPrompt() {
             fb.style.display = 'block';
             setTimeout(function() { fb.style.display = 'none'; }, 2000);
         }
-    }).catch(function() {
-        ta.select();
-        document.execCommand('copy');
     });
 }
 
@@ -232,6 +229,7 @@ function downloadPrompt() {
     a.download = 'copilot-prompt.md';
     document.body.appendChild(a);
     a.click();
+    /* Small delay lets the browser initiate the download before cleanup. */
     setTimeout(function() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
