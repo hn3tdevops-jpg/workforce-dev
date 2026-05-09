@@ -2,28 +2,7 @@ from devhub.app import create_app
 from devhub.config import TestingConfig
 from devhub.extensions import db as _db
 
-
-def _make_isolated_authed_client():
-    """Return an authenticated test client with its own isolated in-memory DB.
-
-    Using a dedicated app instance prevents Flask-Login's per-app-context
-    ``g._login_user`` cache from leaking into the shared session-scoped client.
-    """
-    isolated_app = create_app(TestingConfig)
-    with isolated_app.app_context():
-        _db.create_all()
-        from devhub.models import User
-
-        user = User(email="apitest@example.com", is_admin=True)
-        user.set_password("testpass")
-        _db.session.add(user)
-        _db.session.commit()
-        uid = user.id
-    client = isolated_app.test_client()
-    with client.session_transaction() as sess:
-        sess["_user_id"] = str(uid)
-        sess["_fresh"] = True
-    return client
+from tests.helpers import make_isolated_authed_client
 
 
 def test_api_status_public(client):
@@ -71,26 +50,26 @@ def test_api_recent_progress_anonymous_denied():
 
 
 def test_api_projects_authenticated():
-    authed = _make_isolated_authed_client()
+    authed = make_isolated_authed_client()
     response = authed.get("/api/projects")
     assert response.status_code == 200
     assert isinstance(response.get_json(), list)
 
 
 def test_api_docs_authenticated():
-    authed = _make_isolated_authed_client()
+    authed = make_isolated_authed_client()
     response = authed.get("/api/docs")
     assert response.status_code == 200
 
 
 def test_api_scripts_authenticated():
-    authed = _make_isolated_authed_client()
+    authed = make_isolated_authed_client()
     response = authed.get("/api/scripts")
     assert response.status_code == 200
 
 
 def test_api_recent_progress_authenticated():
-    authed = _make_isolated_authed_client()
+    authed = make_isolated_authed_client()
     response = authed.get("/api/progress/recent")
     assert response.status_code == 200
     assert isinstance(response.get_json(), list)
