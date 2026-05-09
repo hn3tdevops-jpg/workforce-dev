@@ -16,16 +16,15 @@ Workforce Dev Hub is designed as an internal developer tool. This document descr
 The app enforces a deliberately simple access policy suited for an internal developer tool:
 
 ### Public (no login required)
-- All read-only views: docs index/view, progress index/view/report, scripts index/view,
-  packages index/view, projects index/view, search, main dashboard.
-- JSON API endpoints: `/api/status`, `/api/search`, `/api/projects`, `/api/docs`,
-  `/api/scripts`, `/api/progress/recent`.
+- `/health` and `/api/status` — liveness and version endpoints.
 
-**Rationale:** The app is intended for deployment inside a trusted network or behind
-PythonAnywhere account-level access controls. Public read-only access simplifies
-collaboration within the internal team.
+**Rationale:** All other read-only views and API endpoints require authentication to prevent
+anonymous browsing of internal project, document, script, and progress data.
 
 ### Login required
+- All read-only views: docs, progress, scripts, packages, projects, search, files, main dashboard.
+- JSON API endpoints: `/api/search`, `/api/projects`, `/api/docs`, `/api/scripts`,
+  `/api/progress/recent`.
 - All write operations: create, edit, delete documents; create/edit progress entries;
   create/edit scripts; upload packages.
 
@@ -34,10 +33,6 @@ collaboration within the internal team.
 - User management (`/admin/users`).
 - Audit log (`/admin/audit`).
 - Settings page (`/admin/settings`).
-
-> **Production note:** If the hub will be exposed beyond your trusted network, add
-> `@login_required` to the read-only views and API endpoints in `devhub/routes/`.
-> See `docs/LOCAL_DEVELOPMENT.md` for configuration guidance.
 
 ## Package Security
 
