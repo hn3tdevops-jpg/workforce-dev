@@ -1,5 +1,3 @@
-import json
-
 from flask import Blueprint, flash, render_template, request
 from flask_login import login_required
 
@@ -64,7 +62,6 @@ def copilot_task_builder():
                 projects=PROJECTS,
                 task_types=TASK_TYPES,
                 priorities=PRIORITIES,
-                templates_json=json.dumps(TEMPLATES),
                 template_keys=sorted(TEMPLATES.keys()),
                 templates=TEMPLATES,
                 form_data=form_data,
@@ -77,7 +74,6 @@ def copilot_task_builder():
         projects=PROJECTS,
         task_types=TASK_TYPES,
         priorities=PRIORITIES,
-        templates_json=json.dumps(TEMPLATES),
         template_keys=sorted(TEMPLATES.keys()),
         templates=TEMPLATES,
         form_data=form_data,
