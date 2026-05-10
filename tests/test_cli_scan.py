@@ -1,9 +1,5 @@
-import importlib
 import os
 import tempfile
-
-from devhub.app import create_app
-from devhub.extensions import db
 
 
 def _write(path, content="data"):
@@ -28,18 +24,21 @@ def test_scan_cli_honors_scanner_exclusions_from_app_config(app, runner):
     assert "Scan complete. 1 files indexed." in result.output
 
 
-def test_scan_cli_honors_scanner_exclusions_from_env(monkeypatch):
+def test_scan_cli_honors_scanner_exclusions_from_env(monkeypatch, app, runner):
     monkeypatch.setenv("DEVHUB_SCANNER_EXCLUDED_DIRS", "env_excluded")
     monkeypatch.setenv("DEVHUB_SCANNER_EXCLUDED_EXTENSIONS", ".envskip")
-
-    import devhub.config as config_module
-
-    importlib.reload(config_module)
-    app = create_app(config_module.TestingConfig)
-    runner = app.test_cli_runner()
-
-    with app.app_context():
-        db.create_all()
+    app.config["SCANNER_EXCLUDED_DIRS"] = set(
+        filter(
+            None,
+            (d.strip() for d in os.environ["DEVHUB_SCANNER_EXCLUDED_DIRS"].split(",")),
+        )
+    )
+    app.config["SCANNER_EXCLUDED_EXTENSIONS"] = set(
+        filter(
+            None,
+            (e.strip().lstrip(".") for e in os.environ["DEVHUB_SCANNER_EXCLUDED_EXTENSIONS"].split(",")),
+        )
+    )
 
     with tempfile.TemporaryDirectory() as tmpdir:
         excluded_dir = os.path.join(tmpdir, "env_excluded")
@@ -49,10 +48,6 @@ def test_scan_cli_honors_scanner_exclusions_from_env(monkeypatch):
         _write(os.path.join(tmpdir, "included.txt"))
 
         result = runner.invoke(args=["scan", "--root", tmpdir])
-
-    with app.app_context():
-        db.session.remove()
-        db.drop_all()
 
     assert result.exit_code == 0
     assert "Scan complete. 1 files indexed." in result.output

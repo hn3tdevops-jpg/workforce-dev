@@ -13,6 +13,11 @@ def _login(client, user_id):
         sess["_fresh"] = True
 
 
+def _clear_session(client):
+    with client.session_transaction() as sess:
+        sess.clear()
+
+
 def make_valid_package(tmpdir, manifest_overrides=None):
     manifest = {
         "package_key": "test-pkg",
@@ -164,17 +169,36 @@ def test_upload_duplicate_filename_no_overwrite(client, app, admin_user):
         )
 
 
-def test_packages_index_requires_login(client):
+def test_packages_index_requires_login():
+    from devhub.app import create_app
+    from devhub.config import TestingConfig
+    from devhub.extensions import db
+
+    app = create_app(TestingConfig)
+    with app.app_context():
+        db.create_all()
+    client = app.test_client()
+    _clear_session(client)
+
     response = client.get("/packages/")
+
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
+
     assert response.status_code == 302
     assert "/login" in response.headers["Location"]
 
 
-def test_packages_view_requires_login(client, app):
-    with app.app_context():
-        from devhub.extensions import db
-        from devhub.models import Package
+def test_packages_view_requires_login():
+    from devhub.app import create_app
+    from devhub.config import TestingConfig
+    from devhub.extensions import db
+    from devhub.models import Package
 
+    app = create_app(TestingConfig)
+    with app.app_context():
+        db.create_all()
         pkg = Package(
             filename="private.zip",
             quarantine_path="quarantine/private.zip",
@@ -186,22 +210,29 @@ def test_packages_view_requires_login(client, app):
         db.session.commit()
         pkg_id = pkg.id
 
+    client = app.test_client()
+    _clear_session(client)
     response = client.get(f"/packages/{pkg_id}")
+
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
+
     assert response.status_code == 302
     assert "/login" in response.headers["Location"]
 
 
-def test_package_approve_non_admin_denied_for_existing_and_missing_ids(client, app):
+def test_package_approve_non_admin_denied_for_existing_and_missing_ids():
+    from devhub.app import create_app
+    from devhub.config import TestingConfig
+    from devhub.extensions import db
+    from devhub.models import Package, User
+
+    app = create_app(TestingConfig)
     with app.app_context():
-        from devhub.extensions import db
-        from devhub.models import Package, User
-
-        user = User.query.filter_by(email="nonadmin@example.com").first()
-        if user is None:
-            user = User(email="nonadmin@example.com", is_admin=False)
-            user.set_password("testpass123")
-            db.session.add(user)
-
+        db.create_all()
+        user = User(email="nonadmin@example.com", is_admin=False)
+        user.set_password("testpass123")
         pkg = Package(
             filename="approve-me.zip",
             quarantine_path="quarantine/approve-me.zip",
@@ -209,12 +240,14 @@ def test_package_approve_non_admin_denied_for_existing_and_missing_ids(client, a
             manifest_data="{}",
             status="quarantined",
         )
-        db.session.add(pkg)
+        db.session.add_all([user, pkg])
         db.session.commit()
         user_id = user.id
         existing_pkg_id = pkg.id
         missing_pkg_id = pkg.id + 99999
 
+    client = app.test_client()
+    _clear_session(client)
     _login(client, user_id)
 
     existing_response = client.post(
@@ -224,17 +257,17 @@ def test_package_approve_non_admin_denied_for_existing_and_missing_ids(client, a
         f"/packages/{missing_pkg_id}/approve", follow_redirects=False
     )
 
+    with client.session_transaction() as sess:
+        flashed_messages = [message for _, message in sess.get("_flashes", [])]
+
+    with app.app_context():
+        pkg = Package.query.get(existing_pkg_id)
+        db.session.remove()
+        db.drop_all()
+
     assert existing_response.status_code == 302
     assert missing_response.status_code == 302
     assert existing_response.headers["Location"].endswith("/packages/")
     assert missing_response.headers["Location"].endswith("/packages/")
-
-    with client.session_transaction() as sess:
-        flashed_messages = [message for _, message in sess.get("_flashes", [])]
-        assert flashed_messages.count("Admin access required.") >= 2
-
-    with app.app_context():
-        from devhub.models import Package
-
-        pkg = Package.query.get(existing_pkg_id)
-        assert pkg.status == "quarantined"
+    assert flashed_messages.count("Admin access required.") >= 2
+    assert pkg.status == "quarantined"
