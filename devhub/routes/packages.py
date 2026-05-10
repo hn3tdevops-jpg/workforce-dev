@@ -89,6 +89,15 @@ def validate(id):
     pkg.notes = '; '.join(result['errors']) if result['errors'] else None
     if result['manifest']:
         pkg.manifest_data = json.dumps(result['manifest'])
+    log = AuditLog(
+        user_id=current_user.id,
+        action='package_revalidate',
+        resource_type='package',
+        resource_id=pkg.id,
+        details=f'package_id={pkg.id}; actor_id={current_user.id}; outcome={pkg.status}',
+        ip_address=request.remote_addr,
+    )
+    db.session.add(log)
     db.session.commit()
     flash(f'Package re-validated: {pkg.status}', 'info')
     return redirect(url_for('packages.view', id=pkg.id))

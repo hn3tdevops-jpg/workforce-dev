@@ -3,7 +3,7 @@ import json
 import zipfile
 import uuid
 import os
-from devhub.models import Project, Doc, Script, AuditLog
+from devhub.models import Project, Doc, Script, AuditLog, ProgressReport, Package
 
 def login(client, username, password):
     return client.post('/auth/login', data={'username': username, 'password': password},
@@ -17,17 +17,32 @@ def test_health(client, db):
     data = resp.get_json()
     assert data['status'] == 'ok'
 
-def test_api_projects_empty(client, db):
+def test_api_projects_requires_login(client, db):
+    resp = client.get('/api/v1/projects')
+    assert resp.status_code == 302
+
+def test_api_docs_requires_login(client, db):
+    resp = client.get('/api/v1/docs')
+    assert resp.status_code == 302
+
+def test_api_search_requires_login(client, db):
+    resp = client.get('/api/v1/search?q=test')
+    assert resp.status_code == 302
+
+def test_api_projects_empty_authenticated(client, admin_user):
+    login(client, 'admin', 'adminpass')
     resp = client.get('/api/v1/projects')
     assert resp.status_code == 200
     assert resp.get_json() == []
 
-def test_api_docs_empty(client, db):
+def test_api_docs_empty_authenticated(client, admin_user):
+    login(client, 'admin', 'adminpass')
     resp = client.get('/api/v1/docs')
     assert resp.status_code == 200
     assert resp.get_json() == []
 
-def test_api_search_empty(client, db):
+def test_api_search_empty_authenticated(client, admin_user):
+    login(client, 'admin', 'adminpass')
     resp = client.get('/api/v1/search?q=test')
     assert resp.status_code == 200
     data = resp.get_json()
@@ -134,6 +149,20 @@ def test_scripts_create(client, admin_user):
     assert resp.status_code == 200
     assert b'My Script' in resp.data
 
+def test_scripts_duplicate_name_does_not_500(client, admin_user):
+    login(client, 'admin', 'adminpass')
+    first = client.post('/scripts/new', data={
+        'name': 'Duplicate Script', 'description': 'D1', 'content': 'print(1)', 'language': 'python'
+    }, follow_redirects=True)
+    second = client.post('/scripts/new', data={
+        'name': 'Duplicate Script', 'description': 'D2', 'content': 'print(2)', 'language': 'python'
+    }, follow_redirects=True)
+    assert first.status_code == 200
+    assert second.status_code == 200
+    scripts = Script.query.filter_by(name='Duplicate Script').all()
+    assert len(scripts) == 2
+    assert len({s.slug for s in scripts}) == 2
+
 def test_script_run_blocked_and_audit_logged(app, client, admin_user):
     login(client, 'admin', 'adminpass')
     client.post('/scripts/new', data={
@@ -175,7 +204,6 @@ def test_packages_index_requires_login(client, db):
     assert resp.status_code == 302
 
 def test_packages_validate_non_admin_403(client, regular_user, app):
-    from devhub.models import Package
     from devhub.extensions import db as _db
     with app.app_context():
         pkg = Package(filename='test.zip', original_filename='test.zip',
@@ -186,6 +214,26 @@ def test_packages_validate_non_admin_403(client, regular_user, app):
     login(client, 'testuser', 'userpass')
     resp = client.post(f'/packages/{pkg_id}/validate')
     assert resp.status_code == 403
+
+def test_package_revalidate_audit_logged(client, admin_user, app):
+    from devhub.extensions import db as _db
+    with app.app_context():
+        pkg = Package(filename='missing.zip', original_filename='missing.zip',
+                      status='quarantine', uploaded_by=admin_user.id)
+        _db.session.add(pkg)
+        _db.session.commit()
+        pkg_id = pkg.id
+    login(client, 'admin', 'adminpass')
+    resp = client.post(f'/packages/{pkg_id}/validate', follow_redirects=True)
+    assert resp.status_code == 200
+    with app.app_context():
+        log = AuditLog.query.filter_by(
+            action='package_revalidate',
+            resource_id=pkg_id,
+            user_id=admin_user.id,
+        ).first()
+        assert log is not None
+        assert 'outcome=' in (log.details or '')
 
 def test_package_upload_valid(client, admin_user, tmp_path, app):
     import io
@@ -228,3 +276,65 @@ def test_package_upload_missing_manifest_rejected(client, admin_user, tmp_path, 
     }, content_type='multipart/form-data', follow_redirects=True)
     assert resp.status_code == 200
     assert b'rejected' in resp.data.lower() or b'warning' in resp.data.lower()
+
+def test_docs_duplicate_title_does_not_500(client, admin_user):
+    login(client, 'admin', 'adminpass')
+    first = client.post('/docs/new', data={
+        'title': 'Duplicate Doc', 'content': 'Some content', 'category': 'general'
+    }, follow_redirects=True)
+    second = client.post('/docs/new', data={
+        'title': 'Duplicate Doc', 'content': 'Other content', 'category': 'general'
+    }, follow_redirects=True)
+    assert first.status_code == 200
+    assert second.status_code == 200
+    docs = Doc.query.filter_by(title='Duplicate Doc').all()
+    assert len(docs) == 2
+    assert len({d.slug for d in docs}) == 2
+
+def test_admin_toggle_admin_audit_logged(client, admin_user, regular_user, app):
+    login(client, 'admin', 'adminpass')
+    resp = client.post(f'/admin/users/{regular_user.id}/toggle-admin', follow_redirects=True)
+    assert resp.status_code == 200
+    with app.app_context():
+        log = AuditLog.query.filter_by(
+            action='toggle_admin',
+            resource_id=regular_user.id,
+            user_id=admin_user.id,
+        ).first()
+        assert log is not None
+
+def test_admin_deactivate_audit_logged(client, admin_user, regular_user, app):
+    login(client, 'admin', 'adminpass')
+    resp = client.post(f'/admin/users/{regular_user.id}/deactivate', follow_redirects=True)
+    assert resp.status_code == 200
+    with app.app_context():
+        log = AuditLog.query.filter_by(
+            action='deactivate_user',
+            resource_id=regular_user.id,
+            user_id=admin_user.id,
+        ).first()
+        assert log is not None
+
+def test_reports_new_invalid_project_id_validation(client, admin_user):
+    login(client, 'admin', 'adminpass')
+    resp = client.post('/reports/new', data={
+        'title': 'Invalid Project Report',
+        'content': 'Content',
+        'project_id': 'abc',
+        'status': 'draft',
+    }, follow_redirects=True)
+    assert resp.status_code == 200
+    assert b'Please select a valid project' in resp.data
+    assert ProgressReport.query.filter_by(title='Invalid Project Report').first() is None
+
+def test_reports_new_nonexistent_project_id_validation(client, admin_user):
+    login(client, 'admin', 'adminpass')
+    resp = client.post('/reports/new', data={
+        'title': 'Missing Project Report',
+        'content': 'Content',
+        'project_id': '999999',
+        'status': 'draft',
+    }, follow_redirects=True)
+    assert resp.status_code == 200
+    assert b'Selected project does not exist' in resp.data
+    assert ProgressReport.query.filter_by(title='Missing Project Report').first() is None

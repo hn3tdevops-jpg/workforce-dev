@@ -9,6 +9,17 @@ def require_admin():
     if not current_user.is_authenticated or not current_user.is_admin:
         abort(403)
 
+def _audit(action, resource_id, details):
+    entry = AuditLog(
+        user_id=current_user.id,
+        action=action,
+        resource_type='user',
+        resource_id=resource_id,
+        details=details,
+        ip_address=request.remote_addr,
+    )
+    db.session.add(entry)
+
 @admin_bp.route('/')
 @login_required
 def index():
@@ -35,9 +46,16 @@ def toggle_admin(id):
     require_admin()
     user = User.query.get_or_404(id)
     if user.id == current_user.id:
+        _audit('toggle_admin_denied', user.id, 'Denied self admin toggle attempt')
+        db.session.commit()
         flash('Cannot modify your own admin status.', 'danger')
     else:
         user.is_admin = not user.is_admin
+        _audit(
+            'toggle_admin',
+            user.id,
+            f'Toggled admin for user_id={user.id}; actor_id={current_user.id}; is_admin={user.is_admin}',
+        )
         db.session.commit()
         flash(f'Admin status updated for {user.username}.', 'success')
     return redirect(url_for('admin.users'))
@@ -48,9 +66,16 @@ def deactivate(id):
     require_admin()
     user = User.query.get_or_404(id)
     if user.id == current_user.id:
+        _audit('deactivate_denied', user.id, 'Denied self deactivate attempt')
+        db.session.commit()
         flash('Cannot deactivate yourself.', 'danger')
     else:
         user.is_active = False
+        _audit(
+            'deactivate_user',
+            user.id,
+            f'Deactivated user_id={user.id}; actor_id={current_user.id}; is_active={user.is_active}',
+        )
         db.session.commit()
         flash(f'User {user.username} deactivated.', 'success')
     return redirect(url_for('admin.users'))

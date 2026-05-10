@@ -12,6 +12,15 @@ def slugify(s):
     s = re.sub(r'[^a-z0-9]+', '-', s)
     return s.strip('-')
 
+def generate_unique_slug(name):
+    base = slugify(name) or 'script'
+    candidate = base
+    suffix = 2
+    while Script.query.filter_by(slug=candidate).first() is not None:
+        candidate = f'{base}-{suffix}'
+        suffix += 1
+    return candidate
+
 @scripts_bp.route('/')
 @login_required
 def index():
@@ -31,7 +40,7 @@ def new():
         if not name:
             flash('Name is required.', 'danger')
             return render_template('scripts/view.html', script=None, edit=True)
-        slug = slugify(name)
+        slug = generate_unique_slug(name)
         script = Script(name=name, slug=slug, description=description, content=content,
                         language=language, author_id=current_user.id)
         db.session.add(script)

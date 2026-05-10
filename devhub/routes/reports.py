@@ -18,12 +18,24 @@ def new():
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         content = request.form.get('content', '').strip()
-        project_id = request.form.get('project_id')
+        project_id_raw = request.form.get('project_id', '').strip()
         status = request.form.get('status', 'draft')
-        if not title or not project_id:
-            flash('Title and project are required.', 'danger')
+        if not title:
+            flash('Title is required.', 'danger')
             return render_template('reports/view.html', report=None, edit=True, projects=projects)
-        report = ProgressReport(title=title, content=content, project_id=project_id,
+        if not project_id_raw:
+            flash('Project is required.', 'danger')
+            return render_template('reports/view.html', report=None, edit=True, projects=projects)
+        try:
+            project_id = int(project_id_raw)
+        except (TypeError, ValueError):
+            flash('Please select a valid project.', 'danger')
+            return render_template('reports/view.html', report=None, edit=True, projects=projects)
+        project = Project.query.get(project_id)
+        if project is None:
+            flash('Selected project does not exist.', 'danger')
+            return render_template('reports/view.html', report=None, edit=True, projects=projects)
+        report = ProgressReport(title=title, content=content, project_id=project.id,
                                 author_id=current_user.id, status=status)
         db.session.add(report)
         db.session.commit()

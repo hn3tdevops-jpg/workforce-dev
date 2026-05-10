@@ -11,6 +11,15 @@ def slugify(s):
     s = re.sub(r'[^a-z0-9]+', '-', s)
     return s.strip('-')
 
+def generate_unique_slug(title):
+    base = slugify(title) or 'doc'
+    candidate = base
+    suffix = 2
+    while Doc.query.filter_by(slug=candidate).first() is not None:
+        candidate = f'{base}-{suffix}'
+        suffix += 1
+    return candidate
+
 @docs_bp.route('/')
 def index():
     category = request.args.get('category')
@@ -30,10 +39,7 @@ def new():
         if not title:
             flash('Title is required.', 'danger')
             return render_template('docs/view.html', doc=None, edit=True)
-        slug = slugify(title)
-        existing = Doc.query.filter_by(slug=slug).first()
-        if existing:
-            slug = f'{slug}-{Doc.query.count()}'
+        slug = generate_unique_slug(title)
         doc = Doc(title=title, slug=slug, content=content, category=category, author_id=current_user.id)
         db.session.add(doc)
         db.session.commit()

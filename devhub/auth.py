@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from devhub.extensions import db, bcrypt
 from devhub.models import User, AuditLog
@@ -44,6 +44,9 @@ def logout():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.index'))
+    if not current_app.config.get('DEVHUB_ALLOW_REGISTRATION', False):
+        flash('Registration is currently disabled.', 'info')
+        return redirect(url_for('auth.login'))
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip()

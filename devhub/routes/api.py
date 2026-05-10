@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from flask_login import login_required
 from devhub.models import Project, Doc
 from devhub.search import SearchEngine
 
@@ -9,6 +10,7 @@ def health():
     return jsonify({'status': 'ok'})
 
 @api_bp.route('/projects')
+@login_required
 def projects():
     all_projects = Project.query.all()
     return jsonify([{
@@ -17,6 +19,7 @@ def projects():
     } for p in all_projects])
 
 @api_bp.route('/docs')
+@login_required
 def docs():
     all_docs = Doc.query.all()
     return jsonify([{
@@ -24,6 +27,7 @@ def docs():
     } for d in all_docs])
 
 @api_bp.route('/search')
+@login_required
 def search():
     q = request.args.get('q', '').strip()
     engine = SearchEngine()
