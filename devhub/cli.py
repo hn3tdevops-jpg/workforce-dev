@@ -43,7 +43,11 @@ def scan_cmd(root):
     if not roots:
         click.echo("No workspace roots configured. Set DEVHUB_WORKSPACE_ROOTS or pass --root.")
         return
-    count = scan_workspace(roots)
+    count = scan_workspace(
+        roots,
+        excluded_dirs=current_app.config["SCANNER_EXCLUDED_DIRS"],
+        excluded_extensions=current_app.config["SCANNER_EXCLUDED_EXTENSIONS"],
+    )
     click.echo(f"Scan complete. {count} files indexed.")
 
 
