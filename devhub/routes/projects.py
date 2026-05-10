@@ -23,12 +23,14 @@ class ProjectForm(FlaskForm):
 
 
 @bp.route("/")
+@login_required
 def index():
     projects = Project.query.order_by(Project.name).all()
     return render_template("projects/index.html", projects=projects)
 
 
 @bp.route("/<slug>")
+@login_required
 def view(slug):
     project = Project.query.filter_by(slug=slug).first_or_404()
     recent_progress = (

@@ -33,4 +33,4 @@ def test_login_success(client, admin_user):
         follow_redirects=True,
     )
     assert response.status_code == 200
-    assert b"Visual overview of Workforce project docs" in response.data
+    assert b"central platform for project management" in response.data

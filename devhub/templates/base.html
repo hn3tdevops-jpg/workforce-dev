@@ -8,130 +8,134 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/devhub.css') }}" rel="stylesheet">
 </head>
-<body class="devhub-body {% block body_class %}{% endblock %}">
-{% from "_ui.html" import nav_link %}
-{% set is_login = standalone_login|default(false) %}
-{% set is_authenticated = current_user.is_authenticated and not is_login %}
-{% set endpoint = request.endpoint or '' %}
-
-{% if is_authenticated %}
-<div class="app-shell">
-    <header class="topbar border-bottom bg-white">
-        <div class="container-fluid d-flex align-items-center justify-content-between gap-3 py-2">
-            <div class="d-flex align-items-center gap-2">
-                <button
-                    class="btn btn-outline-secondary d-lg-none"
-                    type="button"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#devhubNav"
-                    aria-controls="devhubNav"
-                    aria-label="Open menu"
-                >
-                    <i class="bi bi-list"></i>
-                </button>
-                <a class="navbar-brand fw-bold mb-0" href="{{ url_for('main.index') }}">
-                    <i class="bi bi-gear-wide-connected"></i> Workforce Developer Hub
-                </a>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                <form class="d-none d-md-flex" action="{{ url_for('main.search') }}" method="get" role="search">
-                    <div class="input-group">
-                        <input class="form-control" type="search" name="q" placeholder="Search docs, scripts, files..." value="{{ request.args.get('q', '') }}">
-                        <button class="btn btn-outline-secondary" type="submit" aria-label="Search"><i class="bi bi-search"></i></button>
-                    </div>
-                </form>
-                <div class="text-end">
-                    <div class="fw-semibold small">{{ current_user.email }}</div>
-                    <a class="small text-decoration-none" href="{{ url_for('auth.logout') }}">Sign out</a>
-                </div>
-            </div>
-        </div>
-    </header>
-    <div class="app-shell-body d-flex">
-        <aside class="sidebar border-end d-none d-lg-block bg-white">
-            <nav class="nav flex-column p-3 gap-1">
-                {{ nav_link("Dashboard", "main.", url_for('main.index'), "bi-speedometer2", endpoint) }}
-                {{ nav_link("Projects", "projects.", url_for('projects.index'), "bi-folder2-open", endpoint) }}
-                {{ nav_link("Docs", "docs.", url_for('docs.index'), "bi-file-earmark-text", endpoint) }}
-                {{ nav_link("Progress", "progress.", url_for('progress.index'), "bi-clock-history", endpoint) }}
-                {{ nav_link("Scripts", "scripts.", url_for('scripts.index'), "bi-terminal", endpoint) }}
-                {{ nav_link("Packages", "packages.", url_for('packages.index'), "bi-box-seam", endpoint) }}
-                {% if current_user.is_admin %}
-                {{ nav_link("Admin", "admin.", url_for('admin.settings'), "bi-shield-lock", endpoint) }}
-                {% endif %}
-            </nav>
-        </aside>
-        <div class="offcanvas offcanvas-start" tabindex="-1" id="devhubNav" aria-labelledby="devhubNavLabel">
-            <div class="offcanvas-header">
-                <h5 class="offcanvas-title" id="devhubNavLabel">Workforce Dev Hub</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-            </div>
-            <div class="offcanvas-body">
-                <nav class="nav flex-column gap-1">
-                    {{ nav_link("Dashboard", "main.", url_for('main.index'), "bi-speedometer2", endpoint) }}
-                    {{ nav_link("Projects", "projects.", url_for('projects.index'), "bi-folder2-open", endpoint) }}
-                    {{ nav_link("Docs", "docs.", url_for('docs.index'), "bi-file-earmark-text", endpoint) }}
-                    {{ nav_link("Progress", "progress.", url_for('progress.index'), "bi-clock-history", endpoint) }}
-                    {{ nav_link("Scripts", "scripts.", url_for('scripts.index'), "bi-terminal", endpoint) }}
-                    {{ nav_link("Packages", "packages.", url_for('packages.index'), "bi-box-seam", endpoint) }}
-                    {% if current_user.is_admin %}
-                    {{ nav_link("Admin", "admin.", url_for('admin.settings'), "bi-shield-lock", endpoint) }}
-                    {% endif %}
-                </nav>
-            </div>
-        </div>
-{% elif not is_login %}
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+<body>
+{% set _ep = request.endpoint or '' %}
+<nav class="navbar navbar-expand-lg navbar-dark dh-topbar">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="{{ url_for('main.index') }}">
-            <i class="bi bi-gear-wide-connected"></i> Workforce Developer Hub
+        <a class="navbar-brand dh-brand fw-bold" href="{{ url_for('main.index') }}">
+            <i class="bi bi-gear-wide-connected"></i> Workforce Dev Hub
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#publicNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="publicNav">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('projects.index') }}">Projects</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('docs.index') }}">Docs</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('progress.index') }}">Progress</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('scripts.index') }}">Scripts</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('packages.index') }}">Packages</a></li>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link{% if _ep == 'main.index' %} active{% endif %}" href="{{ url_for('main.index') }}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if _ep.startswith('projects.') %} active{% endif %}" href="{{ url_for('projects.index') }}">
+                        <i class="bi bi-folder2-open"></i> Projects
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if _ep.startswith('docs.') %} active{% endif %}" href="{{ url_for('docs.index') }}">
+                        <i class="bi bi-file-earmark-text"></i> Docs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if _ep.startswith('progress.') %} active{% endif %}" href="{{ url_for('progress.index') }}">
+                        <i class="bi bi-clock-history"></i> Progress
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if _ep.startswith('scripts.') %} active{% endif %}" href="{{ url_for('scripts.index') }}">
+                        <i class="bi bi-terminal"></i> Scripts
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if _ep.startswith('packages.') %} active{% endif %}" href="{{ url_for('packages.index') }}">
+                        <i class="bi bi-archive"></i> Packages
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if _ep == 'main.files' %} active{% endif %}" href="{{ url_for('main.files') }}">
+                        <i class="bi bi-files"></i> Files
+                    </a>
+                </li>
             </ul>
-            <a class="btn btn-primary btn-sm" href="{{ url_for('auth.login') }}">Login</a>
+            <form class="d-flex me-2" action="{{ url_for('main.search') }}" method="get" role="search">
+                <input class="form-control form-control-sm me-2 dh-search-input" type="search" name="q"
+                       placeholder="Search…" value="{{ request.args.get('q', '') }}" aria-label="Search">
+                <button class="btn btn-sm btn-outline-light" type="submit" aria-label="Submit search">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
+            <ul class="navbar-nav">
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin %}
+                    <li class="nav-item">
+                        <a class="nav-link{% if _ep.startswith('admin.') %} active{% endif %}"
+                           href="{{ url_for('admin.settings') }}">
+                            <i class="bi bi-gear"></i> Admin
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                            <span class="d-none d-lg-inline ms-1">{{ current_user.email }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <span class="dropdown-item-text small text-muted">
+                                    {{ current_user.email }}
+                                    {% if current_user.is_admin %}<span class="badge bg-primary ms-1">admin</span>{% endif %}
+                                </span>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                    <i class="bi bi-box-arrow-right me-1"></i> Sign Out
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">
+                            <i class="bi bi-box-arrow-in-right"></i> Sign In
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
     </div>
 </nav>
-{% endif %}
 
-<main class="{% if is_authenticated %}app-content container-fluid py-4{% elif is_login %}auth-shell py-4{% else %}container-fluid py-4{% endif %}">
+<main class="container-fluid py-4">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    <div class="flash-stack {% if is_login %}container{% endif %}">
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="row">
+        <div class="col-12">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show d-flex align-items-start" role="alert">
+                <i class="bi bi-{% if category == 'danger' %}exclamation-triangle-fill{% elif category == 'success' %}check-circle-fill{% elif category == 'warning' %}exclamation-circle-fill{% else %}info-circle-fill{% endif %} me-2 mt-1 flex-shrink-0"></i>
+                <span>{{ message }}</span>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
     {% endif %}
     {% endwith %}
-    {% if is_login %}<div class="container">{% endif %}
+
     {% block content %}{% endblock %}
-    {% if is_login %}</div>{% endif %}
 </main>
 
-{% if is_authenticated %}
-    </div>
-</div>
-{% endif %}
-
-<footer class="footer border-top bg-white py-3 mt-auto">
-    <div class="container-fluid text-center text-muted small">
-        Workforce Developer Hub &middot; <a href="{{ url_for('main.health') }}">/health</a> &middot; <a href="{{ url_for('api.status') }}">/api/status</a>
+<footer class="dh-footer py-3 mt-5">
+    <div class="container-fluid text-center">
+        <small>Workforce Dev Hub &mdash;
+            <a href="{{ url_for('main.health') }}" class="dh-footer-link">/health</a> &mdash;
+            <a href="{{ url_for('api.status') }}" class="dh-footer-link">/api/status</a>
+        </small>
     </div>
 </footer>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='js/devhub.js') }}"></script>
 {% block scripts %}{% endblock %}

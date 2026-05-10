@@ -1,88 +1,56 @@
 /* Workforce Dev Hub - Vanilla JS */
+
 (function () {
     "use strict";
-    const ALERT_DISMISS_DELAY_MS = 6000;
-    const COPY_FEEDBACK_DURATION_MS = 1200;
 
+    // Auto-dismiss alerts after 5 seconds
     document.addEventListener("DOMContentLoaded", function () {
-        const alerts = document.querySelectorAll(".alert.alert-dismissible");
-        alerts.forEach(function (alert) {
+        document.querySelectorAll(".alert.alert-dismissible").forEach(function (alert) {
             setTimeout(function () {
                 const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
                 if (bsAlert) bsAlert.close();
-            }, ALERT_DISMISS_DELAY_MS);
+            }, 5000);
         });
     });
 
+    // Confirm dangerous form submissions
     document.addEventListener("DOMContentLoaded", function () {
-        const forms = document.querySelectorAll("form[data-confirm]");
-        forms.forEach(function (form) {
-            form.addEventListener("submit", function (event) {
-                const message = form.getAttribute("data-confirm") || "Are you sure?";
-                if (!window.confirm(message)) {
-                    event.preventDefault();
+        document.querySelectorAll("form[data-confirm]").forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                const msg = form.getAttribute("data-confirm") || "Are you sure?";
+                if (!window.confirm(msg)) {
+                    e.preventDefault();
                 }
             });
         });
     });
 
+    // Submit loading state: show spinner on submit buttons in any form
+    // (except forms with data-no-loading attribute)
     document.addEventListener("DOMContentLoaded", function () {
-        const forms = document.querySelectorAll("form[data-submit-loading]");
-        forms.forEach(function (form) {
-            form.addEventListener("submit", function () {
-                const submit = form.querySelector('[type="submit"]');
-                if (!submit || submit.disabled) return;
-                submit.dataset.originalText = submit.innerHTML;
-                submit.disabled = true;
-                submit.innerHTML = `<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>${submit.dataset.loadingText || "Saving..."}`;
-            });
-        });
-    });
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const buttons = document.querySelectorAll("[data-copy-target]");
-        buttons.forEach(function (button) {
-            button.addEventListener("click", async function () {
-                const selector = button.getAttribute("data-copy-target");
-                const source = selector ? document.querySelector(selector) : null;
-                if (!source) return;
-                if (!navigator.clipboard || !navigator.clipboard.writeText) return;
-                const value = source.textContent || source.value || "";
-                try {
-                    await navigator.clipboard.writeText(value.trim());
-                    button.dataset.originalLabel = button.textContent;
-                    button.textContent = "Copied";
-                    setTimeout(function () {
-                        button.textContent = button.dataset.originalLabel || "Copy";
-                    }, COPY_FEEDBACK_DURATION_MS);
-                } catch (err) {
-                    console.error("Copy failed", err);
+        document.querySelectorAll("form:not([data-no-loading])").forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                // If the submission was already cancelled (e.g. by the data-confirm
+                // handler registered above), do not enter loading state.
+                if (e.defaultPrevented) return;
+                const btn = form.querySelector("[type=submit]");
+                if (!btn || btn.disabled) return;
+                // Store original text so we can restore it if needed
+                const label = btn.querySelector(".btn-label");
+                const loading = btn.querySelector(".btn-loading");
+                if (label && loading) {
+                    // Already has dual-state markup (e.g. login page handles its own)
+                    return;
                 }
+                btn.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>' +
+                    "Please wait\u2026";
+                btn.disabled = true;
             });
         });
     });
 
-    document.addEventListener("DOMContentLoaded", function () {
-        const queryInputs = document.querySelectorAll('input[name="q"]');
-        queryInputs.forEach(function (input) {
-            if (!input.form || !input.value) return;
-            const clear = document.createElement("button");
-            clear.type = "button";
-            clear.className = "btn btn-outline-secondary";
-            clear.textContent = "Clear";
-            clear.addEventListener("click", function () {
-                input.value = "";
-                input.form.submit();
-            });
-            const submitButton = input.form.querySelector("button[type='submit']");
-            if (submitButton) {
-                submitButton.after(clear);
-            } else {
-                input.insertAdjacentElement("afterend", clear);
-            }
-        });
-    });
-
+    // Slug auto-fill from name field
     document.addEventListener("DOMContentLoaded", function () {
         const nameField = document.getElementById("name");
         const slugField = document.getElementById("slug");
@@ -95,4 +63,41 @@
             });
         }
     });
+
+    // Copy-to-clipboard for elements with data-copy attribute
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll("[data-copy]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const text = btn.getAttribute("data-copy");
+                if (!text) return;
+
+                function showFeedback() {
+                    const original = btn.innerHTML;
+                    btn.innerHTML = '<i class="bi bi-check2"></i>';
+                    setTimeout(function () { btn.innerHTML = original; }, 1500);
+                }
+
+                function fallbackCopy() {
+                    const ta = document.createElement("textarea");
+                    ta.value = text;
+                    ta.style.position = "fixed";
+                    ta.style.opacity = "0";
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    // eslint-disable-next-line deprecation/deprecation
+                    document.execCommand("copy");
+                    document.body.removeChild(ta);
+                    showFeedback();
+                }
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(showFeedback, fallbackCopy);
+                } else {
+                    fallbackCopy();
+                }
+            });
+        });
+    });
+
 })();

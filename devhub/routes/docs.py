@@ -39,6 +39,7 @@ class DocForm(FlaskForm):
 
 
 @bp.route("/")
+@login_required
 def index():
     project_id = request.args.get("project_id", type=int)
     status = request.args.get("status")
@@ -65,6 +66,7 @@ def index():
 
 
 @bp.route("/<int:doc_id>")
+@login_required
 def view(doc_id):
     doc = Document.query.get_or_404(doc_id)
     return render_template("docs/view.html", doc=doc)

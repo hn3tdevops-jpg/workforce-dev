@@ -1,6 +1,8 @@
 def test_app_starts(client):
+    with client.session_transaction() as sess:
+        sess.clear()
     response = client.get("/")
-    assert response.status_code == 200
+    assert response.status_code == 302
 
 
 def test_health(client):
