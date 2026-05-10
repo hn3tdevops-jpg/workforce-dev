@@ -7,6 +7,12 @@ import zipfile
 from devhub.package_validator import validate_package
 
 
+def _login(client, user_id):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(user_id)
+        sess["_fresh"] = True
+
+
 def make_valid_package(tmpdir, manifest_overrides=None):
     manifest = {
         "package_key": "test-pkg",
@@ -156,3 +162,79 @@ def test_upload_duplicate_filename_no_overwrite(client, app, admin_user):
         assert len(set(paths)) == len(paths), (
             "Duplicate quarantine paths — files would overwrite each other!"
         )
+
+
+def test_packages_index_requires_login(client):
+    response = client.get("/packages/")
+    assert response.status_code == 302
+    assert "/login" in response.headers["Location"]
+
+
+def test_packages_view_requires_login(client, app):
+    with app.app_context():
+        from devhub.extensions import db
+        from devhub.models import Package
+
+        pkg = Package(
+            filename="private.zip",
+            quarantine_path="quarantine/private.zip",
+            manifest_valid=True,
+            manifest_data="{}",
+            status="quarantined",
+        )
+        db.session.add(pkg)
+        db.session.commit()
+        pkg_id = pkg.id
+
+    response = client.get(f"/packages/{pkg_id}")
+    assert response.status_code == 302
+    assert "/login" in response.headers["Location"]
+
+
+def test_package_approve_non_admin_denied_for_existing_and_missing_ids(client, app):
+    with app.app_context():
+        from devhub.extensions import db
+        from devhub.models import Package, User
+
+        user = User.query.filter_by(email="nonadmin@example.com").first()
+        if user is None:
+            user = User(email="nonadmin@example.com", is_admin=False)
+            user.set_password("testpass123")
+            db.session.add(user)
+
+        pkg = Package(
+            filename="approve-me.zip",
+            quarantine_path="quarantine/approve-me.zip",
+            manifest_valid=True,
+            manifest_data="{}",
+            status="quarantined",
+        )
+        db.session.add(pkg)
+        db.session.commit()
+        user_id = user.id
+        existing_pkg_id = pkg.id
+        missing_pkg_id = pkg.id + 99999
+
+    _login(client, user_id)
+
+    existing_response = client.post(
+        f"/packages/{existing_pkg_id}/approve", follow_redirects=False
+    )
+    missing_response = client.post(
+        f"/packages/{missing_pkg_id}/approve", follow_redirects=False
+    )
+
+    assert existing_response.status_code == 302
+    assert missing_response.status_code == 302
+    assert existing_response.headers["Location"].endswith("/packages/")
+    assert missing_response.headers["Location"].endswith("/packages/")
+
+    with client.session_transaction() as sess:
+        flashed_messages = [message for _, message in sess.get("_flashes", [])]
+        assert flashed_messages.count("Admin access required.") >= 2
+
+    with app.app_context():
+        from devhub.models import Package
+
+        pkg = Package.query.get(existing_pkg_id)
+        assert pkg.status == "quarantined"
