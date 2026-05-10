@@ -269,5 +269,5 @@ def test_package_approve_non_admin_denied_for_existing_and_missing_ids():
     assert missing_response.status_code == 302
     assert existing_response.headers["Location"].endswith("/packages/")
     assert missing_response.headers["Location"].endswith("/packages/")
-    assert flashed_messages.count("Admin access required.") >= 2
+    assert flashed_messages.count("Admin access required.") == 2
     assert pkg.status == "quarantined"
