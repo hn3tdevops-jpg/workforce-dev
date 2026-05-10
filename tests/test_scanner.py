@@ -1,9 +1,6 @@
 import os
 import tempfile
 
-from devhub.app import create_app
-from devhub.config import TestingConfig
-from devhub.extensions import db
 from devhub.models import TrackedFile
 from devhub.scanner import _DEFAULT_EXCLUDED_DIRS, _DEFAULT_EXCLUDED_EXTENSIONS, scan_workspace
 
@@ -163,58 +160,43 @@ def test_cli_scan_honors_config_exclusions(app, runner):
         result = runner.invoke(args=["scan", "--root", tmpdir])
 
         assert result.exit_code == 0
-        assert "Scan complete. 1 files indexed." in result.output
+        assert "Scan complete. 1 file indexed." in result.output
         with app.app_context():
             scanned = TrackedFile.query.filter(TrackedFile.file_path.startswith(tmpdir)).all()
             assert len(scanned) == 1
             assert scanned[0].file_path.endswith("keep.py")
 
 
-def test_cli_scan_honors_env_exclusions(monkeypatch):
+def test_cli_scan_honors_env_exclusions(app, runner, monkeypatch):
     monkeypatch.setenv("DEVHUB_SCANNER_EXCLUDED_DIRS", "envskip")
     monkeypatch.setenv("DEVHUB_SCANNER_EXCLUDED_EXTENSIONS", ".envext")
-
-    class EnvScannerTestingConfig(TestingConfig):
-        SCANNER_EXCLUDED_DIRS = set(
-            filter(
-                None,
-                (d.strip() for d in os.environ["DEVHUB_SCANNER_EXCLUDED_DIRS"].split(",")),
-            )
+    app.config["SCANNER_EXCLUDED_DIRS"] = set(
+        filter(None, (d.strip() for d in os.environ["DEVHUB_SCANNER_EXCLUDED_DIRS"].split(",")))
+    )
+    app.config["SCANNER_EXCLUDED_EXTENSIONS"] = set(
+        filter(
+            None,
+            (
+                e.strip().lstrip(".")
+                for e in os.environ["DEVHUB_SCANNER_EXCLUDED_EXTENSIONS"].split(",")
+            ),
         )
-        SCANNER_EXCLUDED_EXTENSIONS = set(
-            filter(
-                None,
-                (
-                    e.strip().lstrip(".")
-                    for e in os.environ["DEVHUB_SCANNER_EXCLUDED_EXTENSIONS"].split(",")
-                ),
-            )
-        )
+    )
 
-    env_app = create_app(EnvScannerTestingConfig)
-    with env_app.app_context():
-        db.create_all()
-    runner = env_app.test_cli_runner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        os.makedirs(os.path.join(tmpdir, "envskip"))
+        with open(os.path.join(tmpdir, "envskip", "inside.txt"), "w") as f:
+            f.write("skip dir from env")
+        with open(os.path.join(tmpdir, "ignore.envext"), "w") as f:
+            f.write("skip ext from env")
+        with open(os.path.join(tmpdir, "keep.txt"), "w") as f:
+            f.write("keep")
 
-    try:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            os.makedirs(os.path.join(tmpdir, "envskip"))
-            with open(os.path.join(tmpdir, "envskip", "inside.txt"), "w") as f:
-                f.write("skip dir from env")
-            with open(os.path.join(tmpdir, "ignore.envext"), "w") as f:
-                f.write("skip ext from env")
-            with open(os.path.join(tmpdir, "keep.txt"), "w") as f:
-                f.write("keep")
+        result = runner.invoke(args=["scan", "--root", tmpdir])
 
-            result = runner.invoke(args=["scan", "--root", tmpdir])
-
-            assert result.exit_code == 0
-            assert "Scan complete. 1 files indexed." in result.output
-            with env_app.app_context():
-                scanned = TrackedFile.query.filter(TrackedFile.file_path.startswith(tmpdir)).all()
-                assert len(scanned) == 1
-                assert scanned[0].file_path.endswith("keep.txt")
-    finally:
-        with env_app.app_context():
-            db.session.remove()
-            db.drop_all()
+        assert result.exit_code == 0
+        assert "Scan complete. 1 file indexed." in result.output
+        with app.app_context():
+            scanned = TrackedFile.query.filter(TrackedFile.file_path.startswith(tmpdir)).all()
+            assert len(scanned) == 1
+            assert scanned[0].file_path.endswith("keep.txt")

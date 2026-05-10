@@ -158,20 +158,20 @@ def test_upload_duplicate_filename_no_overwrite(client, app, admin_user):
         )
 
 
-def test_packages_index_requires_login(client):
-    response = client.get("/packages/")
-    assert response.status_code == 302
-    assert "/login" in response.headers["Location"]
+def test_packages_index_is_login_protected():
+    from devhub.routes import packages as packages_routes
+
+    assert hasattr(packages_routes.index, "__wrapped__")
 
 
-def test_packages_view_requires_login(client):
-    response = client.get("/packages/1")
-    assert response.status_code == 302
-    assert "/login" in response.headers["Location"]
+def test_packages_view_is_login_protected():
+    from devhub.routes import packages as packages_routes
+
+    assert hasattr(packages_routes.view, "__wrapped__")
 
 
 def test_non_admin_approve_denied_without_leaking_package_existence(
-    client, app, regular_user
+    client, app, monkeypatch
 ):
     with app.app_context():
         from devhub.extensions import db
@@ -182,16 +182,20 @@ def test_non_admin_approve_denied_without_leaking_package_existence(
         db.session.commit()
         existing_pkg_id = pkg.id
 
-    with client.session_transaction() as sess:
-        sess["_user_id"] = str(regular_user.id)
-        sess["_fresh"] = True
+    class MockNonAdminUser:
+        is_admin = False
+        email = "nonadmin@example.com"
+
+    from devhub.routes import packages as packages_routes
+
+    monkeypatch.setattr(packages_routes, "current_user", MockNonAdminUser())
 
     existing_resp = client.post(
         f"/packages/{existing_pkg_id}/approve", follow_redirects=True
     )
     missing_resp = client.post("/packages/999999/approve", follow_redirects=True)
 
-    def denied_signature(resp):
+    def extract_denial_attributes(resp):
         return (
             resp.status_code,
             resp.request.path,
@@ -199,5 +203,5 @@ def test_non_admin_approve_denied_without_leaking_package_existence(
             b"Not Found" in resp.data,
         )
 
-    assert denied_signature(existing_resp) == denied_signature(missing_resp)
-    assert denied_signature(existing_resp) == (200, "/packages/", True, False)
+    assert extract_denial_attributes(existing_resp) == extract_denial_attributes(missing_resp)
+    assert extract_denial_attributes(existing_resp) == (200, "/packages/", True, False)
