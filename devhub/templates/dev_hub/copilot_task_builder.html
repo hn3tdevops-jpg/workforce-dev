@@ -170,7 +170,7 @@
 {% block scripts %}
 <script>
 /* Template data embedded server-side — no external fetch needed. */
-const TEMPLATES = {{ templates_json|safe }};
+const TEMPLATES = {{ templates|tojson }};
 
 function applyTemplate(key) {
     const t = TEMPLATES[key];

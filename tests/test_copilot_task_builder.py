@@ -232,3 +232,14 @@ class TestCopilotTaskBuilderRoute:
         response = client.get("/")
         assert b"Copilot Task Builder" in response.data
         _logout(client)
+
+    def test_non_admin_user_cannot_access(self, app, normal_user):
+        """Logged-in non-admin user must be denied access to the task builder."""
+        with app.app_context():
+            fresh_client = app.test_client()
+            with fresh_client.session_transaction() as sess:
+                sess["_user_id"] = str(normal_user.id)
+                sess["_fresh"] = True
+            response = fresh_client.get("/dev-hub/copilot-task-builder", follow_redirects=False)
+        assert response.status_code in (301, 302)
+        assert "/dev-hub/copilot-task-builder" not in (response.headers.get("Location") or "")
