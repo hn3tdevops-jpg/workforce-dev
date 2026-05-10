@@ -2,6 +2,8 @@ import uuid
 
 import pytest
 
+from devhub.app import create_app
+from devhub.config import TestingConfig
 from devhub.models import Document, Package, ProgressEntry, Project, Script
 
 
@@ -21,10 +23,9 @@ from devhub.models import Document, Package, ProgressEntry, Project, Script
         "/packages/1",
     ],
 )
-def test_rendered_read_only_routes_anonymous_redirect_to_login(client, path):
-    with client.session_transaction() as sess:
-        sess.clear()
-    response = client.get(path)
+def test_rendered_read_only_routes_anonymous_redirect_to_login(path):
+    anon_client = create_app(TestingConfig).test_client()
+    response = anon_client.get(path)
     assert response.status_code == 302
     assert "/login" in response.headers["Location"]
 
