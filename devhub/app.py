@@ -19,6 +19,7 @@ def create_app(config_class=Config):
     from devhub.auth import bp as auth_bp
     from devhub.routes.admin import bp as admin_bp
     from devhub.routes.api import bp as api_bp
+    from devhub.routes.copilot_task_builder import bp as copilot_bp
     from devhub.routes.docs import bp as docs_bp
     from devhub.routes.main import bp as main_bp
     from devhub.routes.packages import bp as packages_bp
@@ -29,6 +30,7 @@ def create_app(config_class=Config):
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(api_bp, url_prefix="/api")
+    app.register_blueprint(copilot_bp, url_prefix="/dev-hub")
     app.register_blueprint(docs_bp, url_prefix="/docs")
     app.register_blueprint(projects_bp, url_prefix="/projects")
     app.register_blueprint(progress_bp, url_prefix="/progress")

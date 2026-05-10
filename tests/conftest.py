@@ -39,6 +39,20 @@ class _UserProxy:
 
 
 @pytest.fixture(scope="session")
+def normal_user(app):
+    with app.app_context():
+        from devhub.models import User
+
+        user = User.query.filter_by(email="testnormal@example.com").first()
+        if not user:
+            user = User(email="testnormal@example.com", is_admin=False)
+            user.set_password("testpass123")
+            _db.session.add(user)
+            _db.session.commit()
+        return _UserProxy(user.id)
+
+
+@pytest.fixture(scope="session")
 def admin_user(app):
     with app.app_context():
         from devhub.models import User
@@ -50,3 +64,4 @@ def admin_user(app):
             _db.session.add(user)
             _db.session.commit()
         return _UserProxy(user.id)
+
