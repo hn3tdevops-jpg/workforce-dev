@@ -1,3 +1,4 @@
+import importlib
 import os
 import tempfile
 
@@ -27,18 +28,12 @@ def test_scan_cli_honors_scanner_exclusions_from_app_config(app, runner):
 def test_scan_cli_honors_scanner_exclusions_from_env(monkeypatch, app, runner):
     monkeypatch.setenv("DEVHUB_SCANNER_EXCLUDED_DIRS", "env_excluded")
     monkeypatch.setenv("DEVHUB_SCANNER_EXCLUDED_EXTENSIONS", ".envskip")
-    app.config["SCANNER_EXCLUDED_DIRS"] = set(
-        filter(
-            None,
-            (d.strip() for d in os.environ["DEVHUB_SCANNER_EXCLUDED_DIRS"].split(",")),
-        )
-    )
-    app.config["SCANNER_EXCLUDED_EXTENSIONS"] = set(
-        filter(
-            None,
-            (e.strip().lstrip(".") for e in os.environ["DEVHUB_SCANNER_EXCLUDED_EXTENSIONS"].split(",")),
-        )
-    )
+
+    import devhub.config as config_module
+
+    importlib.reload(config_module)
+    app.config["SCANNER_EXCLUDED_DIRS"] = config_module.Config.SCANNER_EXCLUDED_DIRS
+    app.config["SCANNER_EXCLUDED_EXTENSIONS"] = config_module.Config.SCANNER_EXCLUDED_EXTENSIONS
 
     with tempfile.TemporaryDirectory() as tmpdir:
         excluded_dir = os.path.join(tmpdir, "env_excluded")
