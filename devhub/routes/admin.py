@@ -46,7 +46,7 @@ def toggle_admin(id):
     require_admin()
     user = User.query.get_or_404(id)
     if user.id == current_user.id:
-        _audit('toggle_admin_denied', user.id, 'Denied self admin toggle attempt')
+        _audit('toggle_admin_self_denied', user.id, 'Denied self admin toggle attempt')
         db.session.commit()
         flash('Cannot modify your own admin status.', 'danger')
     else:
@@ -66,7 +66,7 @@ def deactivate(id):
     require_admin()
     user = User.query.get_or_404(id)
     if user.id == current_user.id:
-        _audit('deactivate_denied', user.id, 'Denied self deactivate attempt')
+        _audit('deactivate_user_self_denied', user.id, 'Denied self deactivate attempt')
         db.session.commit()
         flash('Cannot deactivate yourself.', 'danger')
     else:
