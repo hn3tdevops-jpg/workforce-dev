@@ -48,8 +48,8 @@ def scan_cmd(root):
         excluded_dirs=current_app.config["SCANNER_EXCLUDED_DIRS"],
         excluded_extensions=current_app.config["SCANNER_EXCLUDED_EXTENSIONS"],
     )
-    noun = "file" if count == 1 else "files"
-    click.echo(f"Scan complete. {count} {noun} indexed.")
+    file_label = "file" if count == 1 else "files"
+    click.echo(f"Scan complete. {count} {file_label} indexed.")
 
 
 @click.command("create-admin")
