@@ -1,7 +1,10 @@
 from devhub.models import Document, Project
 
 
-def test_docs_index(client):
+def test_docs_index(client, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
     response = client.get("/docs/")
     assert response.status_code == 200
 
@@ -31,7 +34,11 @@ def test_docs_create(client, app, admin_user):
     assert response.status_code == 200
 
 
-def test_docs_view(client, app):
+def test_docs_view(client, app, admin_user):
+    with client.session_transaction() as sess:
+        sess["_user_id"] = str(admin_user.id)
+        sess["_fresh"] = True
+
     with app.app_context():
         doc = Document.query.first()
         if doc:

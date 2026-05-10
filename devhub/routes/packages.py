@@ -21,6 +21,7 @@ def allowed_file(filename):
 
 
 @bp.route("/")
+@login_required
 def index():
     packages = Package.query.order_by(Package.uploaded_at.desc()).all()
     install_enabled = current_app.config.get("ENABLE_PACKAGE_INSTALL", False)
@@ -30,6 +31,7 @@ def index():
 
 
 @bp.route("/<int:pkg_id>")
+@login_required
 def view(pkg_id):
     pkg = Package.query.get_or_404(pkg_id)
     manifest = {}
